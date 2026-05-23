@@ -173,6 +173,171 @@ function triangular(): Pattern {
   };
 }
 
+// ---------- Complex patterns ----------
+
+function quadratic(): Pattern {
+  // a*n^2 + b*n + c
+  const a = rand(1, 3);
+  const b = rand(-3, 4);
+  const c = rand(-2, 5);
+  const f = (n: number) => a * n * n + b * n + c;
+  const arr = Array.from({ length: 5 }, (_, i) => f(i + 1));
+  const answer = String(f(6));
+  return {
+    series: arr.map(String),
+    answer,
+    acceptable: [answer],
+    name: "Quadratic rule",
+    hint: "Follows a quadratic formula a·n² + b·n + c.",
+  };
+}
+
+function mixedOps(): Pattern {
+  // x2 +1, x2 +1, ...
+  const start = rand(1, 4);
+  const mul = rand(2, 3);
+  const add = rand(1, 4);
+  const arr = [start];
+  for (let i = 0; i < 4; i++) arr.push(arr[arr.length - 1] * mul + add);
+  const answer = String(arr[arr.length - 1] * mul + add);
+  return {
+    series: arr.map(String),
+    answer,
+    acceptable: [answer],
+    name: "Multiply then add",
+    hint: "Each term: previous × k + c.",
+  };
+}
+
+function powerOfTwoPlus(): Pattern {
+  const c = rand(-2, 5);
+  const start = rand(1, 4);
+  const arr = Array.from({ length: 5 }, (_, i) => 2 ** (start + i) + c);
+  const answer = String(2 ** (start + 5) + c);
+  return {
+    series: arr.map(String),
+    answer,
+    acceptable: [answer],
+    name: "Powers of 2 shifted",
+    hint: "Powers of 2 with a constant added.",
+  };
+}
+
+function factorial(): Pattern {
+  const arr = [1, 2, 6, 24, 120];
+  return {
+    series: arr.map(String),
+    answer: "720",
+    acceptable: ["720"],
+    name: "Factorials",
+    hint: "n! — each term multiplied by next integer.",
+  };
+}
+
+function interleaved(): Pattern {
+  // two interleaved sequences: arithmetic A and geometric B
+  const a0 = rand(1, 10);
+  const ad = rand(2, 6);
+  const b0 = rand(2, 5);
+  const br = rand(2, 3);
+  const arr: number[] = [];
+  for (let i = 0; i < 3; i++) {
+    arr.push(a0 + i * ad);
+    arr.push(b0 * br ** i);
+  }
+  // length 6, next is A index 3
+  const answer = String(a0 + 3 * ad);
+  return {
+    series: arr.map(String),
+    answer,
+    acceptable: [answer],
+    name: "Two interleaved series",
+    hint: "Odd and even positions follow separate rules.",
+  };
+}
+
+function digitSum(): Pattern {
+  // each term = previous + sum of its digits
+  let cur = rand(5, 20);
+  const arr = [cur];
+  for (let i = 0; i < 4; i++) {
+    cur = cur + String(cur).split("").reduce((s, d) => s + Number(d), 0);
+    arr.push(cur);
+  }
+  const next = cur + String(cur).split("").reduce((s, d) => s + Number(d), 0);
+  const answer = String(next);
+  return {
+    series: arr.map(String),
+    answer,
+    acceptable: [answer],
+    name: "Add digit sum",
+    hint: "Add the sum of the term's digits to get the next.",
+  };
+}
+
+function alphabetReverse(): Pattern {
+  // letters going backward, with step
+  const start = rand(20, 25);
+  const step = rand(1, 3);
+  const arr = Array.from({ length: 5 }, (_, i) =>
+    String.fromCharCode(65 + start - i * step),
+  );
+  const answer = String.fromCharCode(65 + start - 5 * step);
+  return {
+    series: arr,
+    answer,
+    acceptable: [answer, answer.toLowerCase()],
+    name: "Reverse alphabet step",
+    hint: "Letters go backward by a fixed step.",
+  };
+}
+
+function squarePlus(): Pattern {
+  // n^2 + n
+  const arr = Array.from({ length: 5 }, (_, i) => (i + 1) * (i + 1) + (i + 1));
+  const answer = String(6 * 6 + 6);
+  return {
+    series: arr.map(String),
+    answer,
+    acceptable: [answer],
+    name: "n² + n",
+    hint: "Each term is n² + n.",
+  };
+}
+
+function fibMultiplied(): Pattern {
+  // Fibonacci-like but multiplied
+  const a = rand(1, 3);
+  const b = rand(2, 4);
+  const arr = [a, b];
+  for (let i = 0; i < 3; i++) arr.push(arr[arr.length - 1] * arr[arr.length - 2]);
+  const answer = String(arr[arr.length - 1] * arr[arr.length - 2]);
+  return {
+    series: arr.map(String),
+    answer,
+    acceptable: [answer],
+    name: "Multiplicative Fibonacci",
+    hint: "Each term is the product of the two before it.",
+  };
+}
+
+function letterSkipCycle(): Pattern {
+  // letter + number where number follows its own pattern (squares)
+  const start = rand(0, 18);
+  const arr = Array.from(
+    { length: 4 },
+    (_, i) => `${String.fromCharCode(65 + start + i * 2)}${(i + 1) ** 2}`,
+  );
+  const answer = `${String.fromCharCode(65 + start + 8)}25`;
+  return {
+    series: arr,
+    answer,
+    acceptable: [answer, answer.toLowerCase()],
+    name: "Letter skip + squares",
+    hint: "Letter jumps by 2, number follows squares.",
+  };
+}
+
 const generators = [
   arithmetic,
   geometric,
@@ -184,6 +349,16 @@ const generators = [
   emojiCycle,
   primes,
   triangular,
+  quadratic,
+  mixedOps,
+  powerOfTwoPlus,
+  factorial,
+  interleaved,
+  digitSum,
+  alphabetReverse,
+  squarePlus,
+  fibMultiplied,
+  letterSkipCycle,
 ];
 
 export function newPattern(lastName?: string): Pattern {
