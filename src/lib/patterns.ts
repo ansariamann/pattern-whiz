@@ -603,52 +603,231 @@ function mixedLetterNumber(): RawPattern {
   };
 }
 
-const generators = [
-  arithmetic,
-  geometric,
-  squares,
-  fibonacci,
-  alternating,
-  alphabet,
-  letterNum,
-  emojiCycle,
-  primes,
-  triangular,
-  quadratic,
-  mixedOps,
-  powerOfTwoPlus,
-  factorial,
-  interleaved,
-  digitSum,
-  alphabetReverse,
-  squarePlus,
-  fibMultiplied,
-  letterSkipCycle,
-  cubesShifted,
-  nSquarePlusOne,
-  diffOfDiffs,
-  multiplyAddIndex,
-  primeGap,
-  alternatingMulSub,
-  squareDiffSeries,
-  geometricMinus,
-  alphaPositionSum,
-  pairSum,
-  tripleStep,
-  divideAdd,
-  sumOfSquares,
-  letterReverseSkip,
-  mixedLetterNumber,
+// ---------- GATE-level patterns ----------
+
+function lucasSeries(): RawPattern {
+  const arr = [2, 1];
+  for (let i = 0; i < 4; i++) arr.push(arr[arr.length - 1] + arr[arr.length - 2]);
+  const next = arr[arr.length - 1] + arr[arr.length - 2];
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "Lucas series",
+    hint: "Like Fibonacci, but starts 2, 1.",
+  };
+}
+
+function pellSeries(): RawPattern {
+  const arr = [1, 2];
+  for (let i = 0; i < 4; i++) arr.push(2 * arr[arr.length - 1] + arr[arr.length - 2]);
+  const next = 2 * arr[arr.length - 1] + arr[arr.length - 2];
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "Pell recurrence",
+    hint: "a(n) = 2·a(n−1) + a(n−2).",
+  };
+}
+
+function catalanSeries(): RawPattern {
+  return {
+    series: ["1", "2", "5", "14", "42", "132"],
+    answer: "429",
+    acceptable: ["429"],
+    name: "Catalan numbers",
+    hint: "C(n) = (2n)! / (n! (n+1)!).",
+  };
+}
+
+function bellSeries(): RawPattern {
+  return {
+    series: ["1", "1", "2", "5", "15", "52"],
+    answer: "203",
+    acceptable: ["203"],
+    name: "Bell numbers",
+    hint: "Partitions of an n-set.",
+  };
+}
+
+function primesSquared(): RawPattern {
+  const ps = [2, 3, 5, 7, 11, 13, 17];
+  const offset = rand(0, 1);
+  const arr = ps.slice(offset, offset + 5).map((p) => p * p);
+  const next = ps[offset + 5] ** 2;
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "Squares of primes",
+    hint: "Each term is the square of a prime.",
+  };
+}
+
+function twoPowMinusN(): RawPattern {
+  const arr = Array.from({ length: 5 }, (_, i) => 2 ** (i + 1) - (i + 1));
+  const next = 2 ** 6 - 6;
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "2ⁿ − n",
+    hint: "2 raised to n, minus n.",
+  };
+}
+
+function factorialSum(): RawPattern {
+  const fact = [1, 2, 6, 24, 120, 720, 5040];
+  const arr: number[] = [];
+  let s = 0;
+  for (let i = 0; i < 6; i++) {
+    s += fact[i];
+    arr.push(s);
+  }
+  const ans = arr[5] + fact[6];
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Σ n!",
+    hint: "Running sum of factorials: 1! + 2! + … + n!.",
+  };
+}
+
+function recurrence3(): RawPattern {
+  const arr = [1, 3];
+  for (let i = 0; i < 4; i++) arr.push(3 * arr[arr.length - 1] - arr[arr.length - 2]);
+  const next = 3 * arr[arr.length - 1] - arr[arr.length - 2];
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "3·a(n−1) − a(n−2)",
+    hint: "Linear recurrence: 3·prev − one-before.",
+  };
+}
+
+function signedSquares(): RawPattern {
+  const arr = Array.from({ length: 6 }, (_, i) => (i % 2 === 0 ? 1 : -1) * (i + 1) ** 2);
+  return {
+    series: arr.map(String),
+    answer: "49",
+    acceptable: ["49"],
+    name: "Alternating signed squares",
+    hint: "(-1)^(n+1) · n².",
+  };
+}
+
+function tetrahedral(): RawPattern {
+  const arr = Array.from({ length: 5 }, (_, i) => {
+    const n = i + 1;
+    return (n * (n + 1) * (n + 2)) / 6;
+  });
+  const ans = (6 * 7 * 8) / 6;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Tetrahedral numbers",
+    hint: "n(n+1)(n+2)/6.",
+  };
+}
+
+function cubeMinusN(): RawPattern {
+  const arr = Array.from({ length: 5 }, (_, i) => {
+    const n = i + 1;
+    return n ** 3 - n;
+  });
+  const ans = 6 ** 3 - 6;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "n³ − n",
+    hint: "Cube of n minus n.",
+  };
+}
+
+function gateMixedRecur(): RawPattern {
+  const start1 = rand(1, 3);
+  const start2 = rand(2, 4);
+  const arr = [start1, start2];
+  for (let i = 2; i < 5; i++) arr.push(arr[i - 1] + arr[i - 2] + (i + 1));
+  const next = arr[4] + arr[3] + 6;
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "a(n−1) + a(n−2) + n",
+    hint: "Fibonacci-like, plus the current index.",
+  };
+}
+
+// ---------- Registry ----------
+
+type Entry = { fn: () => RawPattern; difficulty: Difficulty };
+
+const registry: Entry[] = [
+  { fn: arithmetic, difficulty: "Easy" },
+  { fn: geometric, difficulty: "Easy" },
+  { fn: squares, difficulty: "Easy" },
+  { fn: fibonacci, difficulty: "Easy" },
+  { fn: alphabet, difficulty: "Easy" },
+  { fn: letterNum, difficulty: "Easy" },
+  { fn: emojiCycle, difficulty: "Easy" },
+  { fn: primes, difficulty: "Easy" },
+  { fn: triangular, difficulty: "Easy" },
+  { fn: alternating, difficulty: "Medium" },
+  { fn: quadratic, difficulty: "Medium" },
+  { fn: mixedOps, difficulty: "Medium" },
+  { fn: powerOfTwoPlus, difficulty: "Medium" },
+  { fn: factorial, difficulty: "Medium" },
+  { fn: interleaved, difficulty: "Medium" },
+  { fn: digitSum, difficulty: "Medium" },
+  { fn: alphabetReverse, difficulty: "Medium" },
+  { fn: squarePlus, difficulty: "Medium" },
+  { fn: fibMultiplied, difficulty: "Medium" },
+  { fn: letterSkipCycle, difficulty: "Medium" },
+  { fn: cubesShifted, difficulty: "Hard" },
+  { fn: nSquarePlusOne, difficulty: "Hard" },
+  { fn: diffOfDiffs, difficulty: "Hard" },
+  { fn: multiplyAddIndex, difficulty: "Hard" },
+  { fn: primeGap, difficulty: "Hard" },
+  { fn: alternatingMulSub, difficulty: "Hard" },
+  { fn: squareDiffSeries, difficulty: "Hard" },
+  { fn: geometricMinus, difficulty: "Hard" },
+  { fn: alphaPositionSum, difficulty: "Hard" },
+  { fn: pairSum, difficulty: "Hard" },
+  { fn: tripleStep, difficulty: "Hard" },
+  { fn: divideAdd, difficulty: "Hard" },
+  { fn: sumOfSquares, difficulty: "Hard" },
+  { fn: letterReverseSkip, difficulty: "Hard" },
+  { fn: mixedLetterNumber, difficulty: "Hard" },
+  { fn: lucasSeries, difficulty: "GATE" },
+  { fn: pellSeries, difficulty: "GATE" },
+  { fn: catalanSeries, difficulty: "GATE" },
+  { fn: bellSeries, difficulty: "GATE" },
+  { fn: primesSquared, difficulty: "GATE" },
+  { fn: twoPowMinusN, difficulty: "GATE" },
+  { fn: factorialSum, difficulty: "GATE" },
+  { fn: recurrence3, difficulty: "GATE" },
+  { fn: signedSquares, difficulty: "GATE" },
+  { fn: tetrahedral, difficulty: "GATE" },
+  { fn: cubeMinusN, difficulty: "GATE" },
+  { fn: gateMixedRecur, difficulty: "GATE" },
 ];
 
-export function newPattern(lastName?: string): RawPattern {
-  let p = generators[rand(0, generators.length - 1)]();
+export function newPattern(lastName?: string): Pattern {
+  let entry = registry[rand(0, registry.length - 1)];
+  let p = entry.fn();
   let tries = 0;
   while (p.name === lastName && tries < 5) {
-    p = generators[rand(0, generators.length - 1)]();
+    entry = registry[rand(0, registry.length - 1)];
+    p = entry.fn();
     tries++;
   }
-  return p;
+  return { ...p, difficulty: entry.difficulty };
 }
 
 export function checkAnswer(pattern: Pattern, input: string): boolean {
