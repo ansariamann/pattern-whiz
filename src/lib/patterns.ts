@@ -338,6 +338,266 @@ function letterSkipCycle(): Pattern {
   };
 }
 
+// ---------- Competitive-exam level patterns ----------
+
+function cubesShifted(): Pattern {
+  const c = rand(-3, 5);
+  const start = rand(1, 3);
+  const arr = Array.from({ length: 5 }, (_, i) => (start + i) ** 3 + c);
+  const answer = String((start + 5) ** 3 + c);
+  return {
+    series: arr.map(String),
+    answer,
+    acceptable: [answer],
+    name: "Cubes shifted",
+    hint: "Cubes of consecutive integers, plus a constant.",
+  };
+}
+
+function nSquarePlusOne(): Pattern {
+  // n*(n+1) + n   variants — pick: n^2 + n + 1
+  const arr = Array.from({ length: 5 }, (_, i) => {
+    const n = i + 1;
+    return n * n + n + 1;
+  });
+  const answer = String(6 * 6 + 6 + 1);
+  return {
+    series: arr.map(String),
+    answer,
+    acceptable: [answer],
+    name: "n² + n + 1",
+    hint: "Formula based on n² + n + 1.",
+  };
+}
+
+function diffOfDiffs(): Pattern {
+  // second differences constant and not 1
+  const a = rand(2, 4);
+  const b = rand(1, 5);
+  const c = rand(0, 6);
+  // f(n) = a*n^2 + b*n + c, second difference = 2a
+  const arr = Array.from({ length: 5 }, (_, i) => a * (i + 1) ** 2 + b * (i + 1) + c);
+  const answer = String(a * 36 + b * 6 + c);
+  return {
+    series: arr.map(String),
+    answer,
+    acceptable: [answer],
+    name: "Second-difference constant",
+    hint: "Differences between consecutive differences are constant.",
+  };
+}
+
+function multiplyAddIndex(): Pattern {
+  // each: prev * i + i  where i grows
+  let cur = rand(1, 3);
+  const arr = [cur];
+  for (let i = 2; i <= 5; i++) {
+    cur = cur * i + i;
+    arr.push(cur);
+  }
+  const next = cur * 6 + 6;
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "× index + index",
+    hint: "Each term = previous × position + position.",
+  };
+}
+
+function primeGap(): Pattern {
+  // a_n + nth prime
+  const primesAll = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29];
+  let cur = rand(1, 5);
+  const arr = [cur];
+  for (let i = 0; i < 4; i++) {
+    cur += primesAll[i];
+    arr.push(cur);
+  }
+  const next = cur + primesAll[4];
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "Add successive primes",
+    hint: "Each step adds the next prime number.",
+  };
+}
+
+function alternatingMulSub(): Pattern {
+  // ×2, -3, ×2, -3, …
+  const start = rand(3, 8);
+  const mul = rand(2, 3);
+  const sub = rand(1, 4);
+  const arr = [start];
+  for (let i = 0; i < 5; i++) {
+    arr.push(i % 2 === 0 ? arr[i] * mul : arr[i] - sub);
+  }
+  const last = arr[arr.length - 1];
+  const next = arr.length % 2 === 1 ? last * mul : last - sub;
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "Alternating × / −",
+    hint: "Alternates between multiplying and subtracting.",
+  };
+}
+
+function squareDiffSeries(): Pattern {
+  // differences are themselves squares: +1,+4,+9,+16,…
+  let cur = rand(2, 10);
+  const arr = [cur];
+  for (let i = 1; i <= 4; i++) {
+    cur += i * i;
+    arr.push(cur);
+  }
+  const next = cur + 25;
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "Differences = squares",
+    hint: "Gaps are 1², 2², 3², 4²…",
+  };
+}
+
+function geometricMinus(): Pattern {
+  // ×r − k each step
+  const start = rand(2, 5);
+  const r = rand(2, 3);
+  const k = rand(1, 4);
+  const arr = [start];
+  for (let i = 0; i < 4; i++) arr.push(arr[arr.length - 1] * r - k);
+  const next = arr[arr.length - 1] * r - k;
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "× r − k",
+    hint: "Each term = previous × r − k.",
+  };
+}
+
+function alphaPositionSum(): Pattern {
+  // letters whose positions follow Fibonacci
+  const fib = [1, 2, 3, 5, 8, 13, 21];
+  const offset = rand(0, 3);
+  const arr = fib.slice(0, 5).map((n) => String.fromCharCode(64 + n + offset));
+  const answer = String.fromCharCode(64 + fib[5] + offset);
+  return {
+    series: arr,
+    answer,
+    acceptable: [answer, answer.toLowerCase()],
+    name: "Fibonacci letter positions",
+    hint: "Letter positions follow Fibonacci.",
+  };
+}
+
+function pairSum(): Pattern {
+  // pairs: (a,b), (a+b, a-b style) — Use: each pair (n, n^2)
+  const arr: string[] = [];
+  for (let n = 1; n <= 3; n++) {
+    arr.push(String(n));
+    arr.push(String(n * n));
+  }
+  // sequence: 1,1,2,4,3,9 → next is 4
+  return {
+    series: arr,
+    answer: "4",
+    acceptable: ["4"],
+    name: "Pairs (n, n²)",
+    hint: "Odd positions count up; even positions are their squares.",
+  };
+}
+
+function tripleStep(): Pattern {
+  // groups of 3 with rule +1,+2,+3 repeating? Use: +1, +2, +3, +1, +2, +3
+  const start = rand(1, 6);
+  const steps = [1, 2, 3, 1, 2, 3];
+  const arr = [start];
+  for (let i = 0; i < 5; i++) arr.push(arr[arr.length - 1] + steps[i]);
+  const next = arr[arr.length - 1] + steps[5];
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "Repeating step cycle",
+    hint: "Step pattern repeats every 3 terms.",
+  };
+}
+
+function divideAdd(): Pattern {
+  // start large, /2 +1 repeatedly
+  const start = rand(8, 16) * 4; // ensure divisible enough
+  const arr = [start];
+  let cur = start;
+  for (let i = 0; i < 4; i++) {
+    cur = Math.floor(cur / 2) + 1;
+    arr.push(cur);
+  }
+  const next = Math.floor(cur / 2) + 1;
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "Halve then +1",
+    hint: "Each term = floor(previous/2) + 1.",
+  };
+}
+
+function sumOfSquares(): Pattern {
+  // 1, 1+4=5, 5+9=14, 14+16=30, 30+25=55, next +36=91
+  const arr = [1];
+  for (let n = 2; n <= 5; n++) arr.push(arr[arr.length - 1] + n * n);
+  const next = arr[arr.length - 1] + 36;
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "Running sum of squares",
+    hint: "Add the next perfect square each time.",
+  };
+}
+
+function letterReverseSkip(): Pattern {
+  // Z, X, U, Q, L → −2, −3, −4, −5, next −6
+  const start = 25; // Z index
+  const arr: string[] = [];
+  let pos = start;
+  arr.push(String.fromCharCode(65 + pos));
+  for (let step = 2; step <= 5; step++) {
+    pos -= step;
+    arr.push(String.fromCharCode(65 + pos));
+  }
+  pos -= 6;
+  const answer = String.fromCharCode(65 + pos);
+  return {
+    series: arr,
+    answer,
+    acceptable: [answer, answer.toLowerCase()],
+    name: "Growing reverse step",
+    hint: "Letter goes back by 2, 3, 4, 5… each step.",
+  };
+}
+
+function mixedLetterNumber(): Pattern {
+  // A2, D8, G18, J32, M50 → letters +3, numbers = 2n²
+  const startIdx = rand(0, 10);
+  const arr = Array.from({ length: 5 }, (_, i) => {
+    const n = i + 1;
+    return `${String.fromCharCode(65 + startIdx + i * 3)}${2 * n * n}`;
+  });
+  const answer = `${String.fromCharCode(65 + startIdx + 15)}${2 * 36}`;
+  return {
+    series: arr,
+    answer,
+    acceptable: [answer, answer.toLowerCase()],
+    name: "Letter +3, number = 2n²",
+    hint: "Letter advances by 3; number follows 2n².",
+  };
+}
+
 const generators = [
   arithmetic,
   geometric,
@@ -359,6 +619,21 @@ const generators = [
   squarePlus,
   fibMultiplied,
   letterSkipCycle,
+  cubesShifted,
+  nSquarePlusOne,
+  diffOfDiffs,
+  multiplyAddIndex,
+  primeGap,
+  alternatingMulSub,
+  squareDiffSeries,
+  geometricMinus,
+  alphaPositionSum,
+  pairSum,
+  tripleStep,
+  divideAdd,
+  sumOfSquares,
+  letterReverseSkip,
+  mixedLetterNumber,
 ];
 
 export function newPattern(lastName?: string): Pattern {
