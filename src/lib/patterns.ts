@@ -9,6 +9,8 @@ export type Pattern = {
 
 export type Difficulty = "Easy" | "Medium" | "Hard" | "GATE";
 
+type RawPattern = Omit<Pattern, "difficulty">;
+
 const rand = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
