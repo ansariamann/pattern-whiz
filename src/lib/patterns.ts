@@ -16,7 +16,7 @@ const rand = (min: number, max: number) =>
 
 const norm = (s: string) => s.trim().toLowerCase();
 
-function arithmetic(): Pattern {
+function arithmetic(): RawPattern {
   const start = rand(1, 20);
   const step = rand(2, 9);
   const arr = Array.from({ length: 5 }, (_, i) => start + i * step);
@@ -30,7 +30,7 @@ function arithmetic(): Pattern {
   };
 }
 
-function geometric(): Pattern {
+function geometric(): RawPattern {
   const start = rand(1, 5);
   const ratio = rand(2, 4);
   const arr = Array.from({ length: 4 }, (_, i) => start * ratio ** i);
@@ -44,7 +44,7 @@ function geometric(): Pattern {
   };
 }
 
-function squares(): Pattern {
+function squares(): RawPattern {
   const start = rand(1, 5);
   const arr = Array.from({ length: 5 }, (_, i) => (start + i) ** 2);
   const answer = String((start + 5) ** 2);
@@ -57,7 +57,7 @@ function squares(): Pattern {
   };
 }
 
-function fibonacci(): Pattern {
+function fibonacci(): RawPattern {
   const a = rand(1, 4);
   const b = rand(1, 4);
   const arr = [a, b];
@@ -72,7 +72,7 @@ function fibonacci(): Pattern {
   };
 }
 
-function alternating(): Pattern {
+function alternating(): RawPattern {
   const start = rand(2, 6);
   const add = rand(2, 5);
   const sub = rand(1, 3);
@@ -91,7 +91,7 @@ function alternating(): Pattern {
   };
 }
 
-function alphabet(): Pattern {
+function alphabet(): RawPattern {
   const start = rand(0, 15);
   const step = rand(1, 3);
   const arr = Array.from({ length: 5 }, (_, i) =>
@@ -107,7 +107,7 @@ function alphabet(): Pattern {
   };
 }
 
-function letterNum(): Pattern {
+function letterNum(): RawPattern {
   const start = rand(0, 20);
   const arr = Array.from(
     { length: 4 },
@@ -123,7 +123,7 @@ function letterNum(): Pattern {
   };
 }
 
-function emojiCycle(): Pattern {
+function emojiCycle(): RawPattern {
   const sets = [
     ["🔴", "🔵", "🟢"],
     ["⭐", "🌙", "☀️"],
@@ -144,7 +144,7 @@ function emojiCycle(): Pattern {
   };
 }
 
-function primes(): Pattern {
+function primes(): RawPattern {
   const primesAll = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41];
   const offset = rand(0, 3);
   const arr = primesAll.slice(offset, offset + 5);
@@ -158,7 +158,7 @@ function primes(): Pattern {
   };
 }
 
-function triangular(): Pattern {
+function triangular(): RawPattern {
   const start = rand(1, 3);
   const arr: number[] = [];
   let cur = (start * (start + 1)) / 2;
@@ -180,7 +180,7 @@ function triangular(): Pattern {
 
 // ---------- Complex patterns ----------
 
-function quadratic(): Pattern {
+function quadratic(): RawPattern {
   // a*n^2 + b*n + c
   const a = rand(1, 3);
   const b = rand(-3, 4);
@@ -197,7 +197,7 @@ function quadratic(): Pattern {
   };
 }
 
-function mixedOps(): Pattern {
+function mixedOps(): RawPattern {
   // x2 +1, x2 +1, ...
   const start = rand(1, 4);
   const mul = rand(2, 3);
@@ -214,7 +214,7 @@ function mixedOps(): Pattern {
   };
 }
 
-function powerOfTwoPlus(): Pattern {
+function powerOfTwoPlus(): RawPattern {
   const c = rand(-2, 5);
   const start = rand(1, 4);
   const arr = Array.from({ length: 5 }, (_, i) => 2 ** (start + i) + c);
@@ -228,7 +228,7 @@ function powerOfTwoPlus(): Pattern {
   };
 }
 
-function factorial(): Pattern {
+function factorial(): RawPattern {
   const arr = [1, 2, 6, 24, 120];
   return {
     series: arr.map(String),
@@ -239,7 +239,7 @@ function factorial(): Pattern {
   };
 }
 
-function interleaved(): Pattern {
+function interleaved(): RawPattern {
   // two interleaved sequences: arithmetic A and geometric B
   const a0 = rand(1, 10);
   const ad = rand(2, 6);
@@ -261,7 +261,7 @@ function interleaved(): Pattern {
   };
 }
 
-function digitSum(): Pattern {
+function digitSum(): RawPattern {
   // each term = previous + sum of its digits
   let cur = rand(5, 20);
   const arr = [cur];
@@ -280,7 +280,7 @@ function digitSum(): Pattern {
   };
 }
 
-function alphabetReverse(): Pattern {
+function alphabetReverse(): RawPattern {
   // letters going backward, with step
   const start = rand(20, 25);
   const step = rand(1, 3);
@@ -297,7 +297,7 @@ function alphabetReverse(): Pattern {
   };
 }
 
-function squarePlus(): Pattern {
+function squarePlus(): RawPattern {
   // n^2 + n
   const arr = Array.from({ length: 5 }, (_, i) => (i + 1) * (i + 1) + (i + 1));
   const answer = String(6 * 6 + 6);
@@ -310,7 +310,7 @@ function squarePlus(): Pattern {
   };
 }
 
-function fibMultiplied(): Pattern {
+function fibMultiplied(): RawPattern {
   // Fibonacci-like but multiplied
   const a = rand(1, 3);
   const b = rand(2, 4);
@@ -326,7 +326,7 @@ function fibMultiplied(): Pattern {
   };
 }
 
-function letterSkipCycle(): Pattern {
+function letterSkipCycle(): RawPattern {
   // letter + number where number follows its own pattern (squares)
   const start = rand(0, 18);
   const arr = Array.from(
@@ -345,7 +345,7 @@ function letterSkipCycle(): Pattern {
 
 // ---------- Competitive-exam level patterns ----------
 
-function cubesShifted(): Pattern {
+function cubesShifted(): RawPattern {
   const c = rand(-3, 5);
   const start = rand(1, 3);
   const arr = Array.from({ length: 5 }, (_, i) => (start + i) ** 3 + c);
@@ -359,7 +359,7 @@ function cubesShifted(): Pattern {
   };
 }
 
-function nSquarePlusOne(): Pattern {
+function nSquarePlusOne(): RawPattern {
   // n*(n+1) + n   variants — pick: n^2 + n + 1
   const arr = Array.from({ length: 5 }, (_, i) => {
     const n = i + 1;
@@ -375,7 +375,7 @@ function nSquarePlusOne(): Pattern {
   };
 }
 
-function diffOfDiffs(): Pattern {
+function diffOfDiffs(): RawPattern {
   // second differences constant and not 1
   const a = rand(2, 4);
   const b = rand(1, 5);
@@ -392,7 +392,7 @@ function diffOfDiffs(): Pattern {
   };
 }
 
-function multiplyAddIndex(): Pattern {
+function multiplyAddIndex(): RawPattern {
   // each: prev * i + i  where i grows
   let cur = rand(1, 3);
   const arr = [cur];
@@ -410,7 +410,7 @@ function multiplyAddIndex(): Pattern {
   };
 }
 
-function primeGap(): Pattern {
+function primeGap(): RawPattern {
   // a_n + nth prime
   const primesAll = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29];
   let cur = rand(1, 5);
@@ -429,7 +429,7 @@ function primeGap(): Pattern {
   };
 }
 
-function alternatingMulSub(): Pattern {
+function alternatingMulSub(): RawPattern {
   // ×2, -3, ×2, -3, …
   const start = rand(3, 8);
   const mul = rand(2, 3);
@@ -449,7 +449,7 @@ function alternatingMulSub(): Pattern {
   };
 }
 
-function squareDiffSeries(): Pattern {
+function squareDiffSeries(): RawPattern {
   // differences are themselves squares: +1,+4,+9,+16,…
   let cur = rand(2, 10);
   const arr = [cur];
@@ -467,7 +467,7 @@ function squareDiffSeries(): Pattern {
   };
 }
 
-function geometricMinus(): Pattern {
+function geometricMinus(): RawPattern {
   // ×r − k each step
   const start = rand(2, 5);
   const r = rand(2, 3);
@@ -484,7 +484,7 @@ function geometricMinus(): Pattern {
   };
 }
 
-function alphaPositionSum(): Pattern {
+function alphaPositionSum(): RawPattern {
   // letters whose positions follow Fibonacci
   const fib = [1, 2, 3, 5, 8, 13, 21];
   const offset = rand(0, 3);
@@ -499,7 +499,7 @@ function alphaPositionSum(): Pattern {
   };
 }
 
-function pairSum(): Pattern {
+function pairSum(): RawPattern {
   // pairs: (a,b), (a+b, a-b style) — Use: each pair (n, n^2)
   const arr: string[] = [];
   for (let n = 1; n <= 3; n++) {
@@ -516,7 +516,7 @@ function pairSum(): Pattern {
   };
 }
 
-function tripleStep(): Pattern {
+function tripleStep(): RawPattern {
   // groups of 3 with rule +1,+2,+3 repeating? Use: +1, +2, +3, +1, +2, +3
   const start = rand(1, 6);
   const steps = [1, 2, 3, 1, 2, 3];
@@ -532,7 +532,7 @@ function tripleStep(): Pattern {
   };
 }
 
-function divideAdd(): Pattern {
+function divideAdd(): RawPattern {
   // start large, /2 +1 repeatedly
   const start = rand(8, 16) * 4; // ensure divisible enough
   const arr = [start];
@@ -551,7 +551,7 @@ function divideAdd(): Pattern {
   };
 }
 
-function sumOfSquares(): Pattern {
+function sumOfSquares(): RawPattern {
   // 1, 1+4=5, 5+9=14, 14+16=30, 30+25=55, next +36=91
   const arr = [1];
   for (let n = 2; n <= 5; n++) arr.push(arr[arr.length - 1] + n * n);
@@ -565,7 +565,7 @@ function sumOfSquares(): Pattern {
   };
 }
 
-function letterReverseSkip(): Pattern {
+function letterReverseSkip(): RawPattern {
   // Z, X, U, Q, L → −2, −3, −4, −5, next −6
   const start = 25; // Z index
   const arr: string[] = [];
@@ -586,7 +586,7 @@ function letterReverseSkip(): Pattern {
   };
 }
 
-function mixedLetterNumber(): Pattern {
+function mixedLetterNumber(): RawPattern {
   // A2, D8, G18, J32, M50 → letters +3, numbers = 2n²
   const startIdx = rand(0, 10);
   const arr = Array.from({ length: 5 }, (_, i) => {
@@ -641,7 +641,7 @@ const generators = [
   mixedLetterNumber,
 ];
 
-export function newPattern(lastName?: string): Pattern {
+export function newPattern(lastName?: string): RawPattern {
   let p = generators[rand(0, generators.length - 1)]();
   let tries = 0;
   while (p.name === lastName && tries < 5) {
