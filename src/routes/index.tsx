@@ -32,7 +32,9 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [pattern, setPattern] = useState<Pattern>(() => newPattern());
   const [input, setInput] = useState("");
-  const [score, setScore] = useState(0);
+  const [exp, setExp] = useState(0);
+  const [solved, setSolved] = useState(0);
+  const [lastGain, setLastGain] = useState(0);
   const [streak, setStreak] = useState(0);
   const [best, setBest] = useState(0);
   const [lives, setLives] = useState(3);
@@ -41,7 +43,6 @@ function Index() {
   const [revealed, setRevealed] = useState(false);
   const [over, setOver] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
-  const [round, setRound] = useState(1);
 
   useEffect(() => {
     if (flash === "none") return;
@@ -54,12 +55,13 @@ function Index() {
     setInput("");
     setRevealed(false);
     setHintUsed(false);
-    setRound((r) => (resetAll ? 1 : r + 1));
     if (resetAll) {
-      setScore(0);
+      setExp(0);
+      setSolved(0);
       setStreak(0);
       setLives(3);
       setOver(false);
+      setLastGain(0);
     }
   };
 
@@ -67,12 +69,14 @@ function Index() {
     if (!input.trim() || revealed) return;
     if (checkAnswer(pattern, input)) {
       const newStreak = streak + 1;
-      const gained = 1 + Math.floor(newStreak / 3);
-      setScore((s) => s + gained);
+      const gained = 10 + Math.floor(newStreak / 3) * 5;
+      setExp((s) => s + gained);
+      setSolved((n) => n + 1);
+      setLastGain(gained);
       setStreak(newStreak);
       setBest((b) => Math.max(b, newStreak));
       setFlash("good");
-      toast.success(`Correct! +${gained}`, {
+      toast.success(`Correct! +${gained} XP`, {
         description: `Pattern: ${pattern.name}`,
       });
       setRevealed(true);
@@ -120,13 +124,13 @@ function Index() {
         <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-              Predict the Next
+              Pattern Whiz
             </h1>
             <p className="text-sm text-muted-foreground">
-              Spot the pattern. Type the next item. Don't lose all your hearts.
+              Competitive-exam style sequences. Earn XP coins for every solve.
             </p>
           </div>
-          <Scoreboard score={score} streak={streak} lives={lives} />
+          <Scoreboard exp={exp} streak={streak} lives={lives} lastGain={lastGain} />
         </header>
 
         <motion.div
@@ -139,9 +143,12 @@ function Index() {
           transition={{ duration: 0.45 }}
           className={`rounded-3xl border bg-card p-6 shadow-xl transition-all md:p-10 ${flashClass}`}
         >
-          <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5" />
-            Round {round}
+          <div className="mb-4 flex items-center justify-between gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Sparkles className="h-3.5 w-3.5" />
+              Solved {solved}
+            </span>
+            <span>Streak {streak}</span>
           </div>
 
           <div className="mb-8 flex flex-wrap items-center justify-center gap-3 md:gap-4">
@@ -150,7 +157,7 @@ function Index() {
                 const isLast = i === displaySeries.length - 1;
                 return (
                   <motion.div
-                    key={`${pattern.name}-${round}-${i}-${item}`}
+                    key={`${pattern.name}-${solved}-${i}-${item}`}
                     initial={{ opacity: 0, y: 12, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ delay: i * 0.06, type: "spring", stiffness: 260 }}
@@ -216,7 +223,7 @@ function Index() {
         </motion.div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Best streak: {best} · Each round uses a different pattern — numbers, letters, shapes, cycles.
+          Best streak: {best} · Every puzzle is a fresh pattern — arithmetic, algebraic, alphanumeric and more.
         </p>
       </div>
 
@@ -228,7 +235,8 @@ function Index() {
               Game over
             </DialogTitle>
             <DialogDescription>
-              Final score: <span className="font-semibold text-foreground">{score}</span>
+              Total XP: <span className="font-semibold text-foreground">{exp}</span>
+              {" · "}Solved: <span className="font-semibold text-foreground">{solved}</span>
               {" · "}Best streak: <span className="font-semibold text-foreground">{best}</span>
             </DialogDescription>
           </DialogHeader>
@@ -244,17 +252,19 @@ function Index() {
 }
 
 function Scoreboard({
-  score,
+  exp,
   streak,
   lives,
+  lastGain,
 }: {
-  score: number;
+  exp: number;
   streak: number;
   lives: number;
+  lastGain: number;
 }) {
   return (
     <div className="flex items-center gap-4 rounded-2xl border bg-card px-4 py-2 shadow-sm">
-      <Stat label="Score" value={score} />
+      <ExpCoin exp={exp} lastGain={lastGain} />
       <div className="h-8 w-px bg-border" />
       <Stat label="Streak" value={streak} />
       <div className="h-8 w-px bg-border" />
@@ -272,6 +282,49 @@ function Scoreboard({
             />
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ExpCoin({ exp, lastGain }: { exp: number; lastGain: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      <motion.div
+        key={exp}
+        initial={{ rotateY: 0, scale: 1 }}
+        animate={{ rotateY: 360, scale: [1, 1.15, 1] }}
+        transition={{ duration: 0.6 }}
+        className="relative flex h-11 w-11 items-center justify-center rounded-full text-amber-900 shadow-[inset_0_-3px_6px_rgba(0,0,0,0.25),inset_0_3px_6px_rgba(255,255,255,0.6),0_4px_10px_rgba(217,119,6,0.45)]"
+        style={{
+          background:
+            "radial-gradient(circle at 30% 30%, #fde68a 0%, #fbbf24 45%, #b45309 100%)",
+          border: "2px solid #f59e0b",
+        }}
+      >
+        <span className="text-[11px] font-extrabold tracking-tighter">XP</span>
+        <AnimatePresence>
+          {lastGain > 0 && (
+            <motion.span
+              key={`gain-${exp}`}
+              initial={{ opacity: 0, y: 0 }}
+              animate={{ opacity: 1, y: -18 }}
+              exit={{ opacity: 0, y: -28 }}
+              transition={{ duration: 0.9 }}
+              className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 text-xs font-bold text-emerald-600"
+            >
+              +{lastGain}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </motion.div>
+      <div className="flex flex-col">
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+          Experience
+        </span>
+        <span className="text-xl font-bold tabular-nums text-amber-600">
+          {exp}
+        </span>
       </div>
     </div>
   );
