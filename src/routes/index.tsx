@@ -12,8 +12,20 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Heart, Lightbulb, RotateCcw, Sparkles, Trophy } from "lucide-react";
-import { newPattern, checkAnswer, type Pattern } from "@/lib/patterns";
+import { Heart, Lightbulb, RotateCcw, Sparkles, Trophy, Zap, Flame, GraduationCap } from "lucide-react";
+import { newPattern, checkAnswer, type Pattern, type Difficulty } from "@/lib/patterns";
+
+const DIFF_META: Record<
+  Difficulty,
+  { label: string; xp: number; gradient: string; ring: string; chip: string; icon: typeof Zap }
+> = {
+  Easy:   { label: "Easy",   xp: 10, gradient: "from-emerald-400 to-teal-500", ring: "ring-emerald-400/40", chip: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30", icon: Sparkles },
+  Medium: { label: "Medium", xp: 20, gradient: "from-sky-400 to-indigo-500",   ring: "ring-sky-400/40",     chip: "bg-sky-500/15 text-sky-600 border-sky-500/30",         icon: Zap },
+  Hard:   { label: "Hard",   xp: 40, gradient: "from-orange-400 to-rose-500",  ring: "ring-rose-400/40",    chip: "bg-rose-500/15 text-rose-600 border-rose-500/30",       icon: Flame },
+  GATE:   { label: "GATE",   xp: 80, gradient: "from-fuchsia-500 to-violet-600",ring: "ring-fuchsia-500/50",chip: "bg-fuchsia-500/15 text-fuchsia-600 border-fuchsia-500/30",icon: GraduationCap },
+};
+
+const LEVEL_STEP = 100;
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -44,6 +56,10 @@ function Index() {
   const [over, setOver] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
 
+  const diff = DIFF_META[pattern.difficulty];
+  const level = Math.floor(exp / LEVEL_STEP) + 1;
+  const intoLevel = exp % LEVEL_STEP;
+
   useEffect(() => {
     if (flash === "none") return;
     const t = setTimeout(() => setFlash("none"), 500);
@@ -69,7 +85,9 @@ function Index() {
     if (!input.trim() || revealed) return;
     if (checkAnswer(pattern, input)) {
       const newStreak = streak + 1;
-      const gained = 10 + Math.floor(newStreak / 3) * 5;
+      const base = DIFF_META[pattern.difficulty].xp;
+      const bonus = Math.floor(newStreak / 3) * 5;
+      const gained = base + bonus;
       setExp((s) => s + gained);
       setSolved((n) => n + 1);
       setLastGain(gained);
@@ -77,7 +95,7 @@ function Index() {
       setBest((b) => Math.max(b, newStreak));
       setFlash("good");
       toast.success(`Correct! +${gained} XP`, {
-        description: `Pattern: ${pattern.name}`,
+        description: `${pattern.difficulty} · ${pattern.name}`,
       });
       setRevealed(true);
       setTimeout(() => nextRound(), 900);
@@ -108,10 +126,10 @@ function Index() {
 
   const flashClass =
     flash === "good"
-      ? "ring-4 ring-emerald-400/60"
+      ? "ring-4 ring-emerald-400/70 shadow-[0_0_60px_-12px_rgba(16,185,129,0.6)]"
       : flash === "bad"
-        ? "ring-4 ring-rose-500/60"
-        : "ring-1 ring-border";
+        ? "ring-4 ring-rose-500/70 shadow-[0_0_60px_-12px_rgba(244,63,94,0.6)]"
+        : `ring-1 ring-border`;
 
   const displaySeries = useMemo(
     () => [...pattern.series, revealed ? pattern.answer : "?"],
@@ -119,18 +137,42 @@ function Index() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/40 px-4 py-10">
+    <div className="relative min-h-screen overflow-hidden px-4 py-10">
+      {/* Animated background */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-background to-fuchsia-50 dark:from-indigo-950/40 dark:via-background dark:to-fuchsia-950/40" />
+        <div
+          className="absolute -top-32 -left-32 h-96 w-96 rounded-full opacity-30 blur-3xl"
+          style={{ background: "radial-gradient(circle, #818cf8 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full opacity-30 blur-3xl"
+          style={{ background: "radial-gradient(circle, #e879f9 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+      </div>
+
       <div className="mx-auto max-w-3xl">
-        <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+            <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-600">
+              <Sparkles className="h-3 w-3" /> Aptitude trainer
+            </div>
+            <h1 className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-4xl font-black tracking-tight text-transparent md:text-5xl">
               Pattern Whiz
             </h1>
             <p className="text-sm text-muted-foreground">
-              Competitive-exam style sequences. Earn XP coins for every solve.
+              GATE-grade sequences. Solve → earn XP → level up.
             </p>
           </div>
-          <Scoreboard exp={exp} streak={streak} lives={lives} lastGain={lastGain} />
+          <Scoreboard exp={exp} streak={streak} lives={lives} lastGain={lastGain} level={level} intoLevel={intoLevel} />
         </header>
 
         <motion.div
@@ -141,14 +183,25 @@ function Index() {
               : { x: 0 }
           }
           transition={{ duration: 0.45 }}
-          className={`rounded-3xl border bg-card p-6 shadow-xl transition-all md:p-10 ${flashClass}`}
+          className={`relative overflow-hidden rounded-3xl border bg-card/70 p-6 shadow-2xl backdrop-blur-xl transition-all md:p-10 ${flashClass}`}
         >
-          <div className="mb-4 flex items-center justify-between gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-            <span className="flex items-center gap-2">
-              <Sparkles className="h-3.5 w-3.5" />
-              Solved {solved}
+          <div
+            className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${diff.gradient}`}
+          />
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${diff.chip}`}
+            >
+              <diff.icon className="h-3.5 w-3.5" />
+              {diff.label} · +{diff.xp} XP
             </span>
-            <span>Streak {streak}</span>
+            <div className="flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+              <span>Solved {solved}</span>
+              <span className="text-border">·</span>
+              <span className="inline-flex items-center gap-1">
+                <Flame className="h-3 w-3 text-orange-500" /> {streak}
+              </span>
+            </div>
           </div>
 
           <div className="mb-8 flex flex-wrap items-center justify-center gap-3 md:gap-4">
@@ -161,14 +214,14 @@ function Index() {
                     initial={{ opacity: 0, y: 12, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ delay: i * 0.06, type: "spring", stiffness: 260 }}
-                    className={`flex h-16 min-w-16 items-center justify-center rounded-2xl px-4 text-2xl font-semibold md:h-20 md:min-w-20 md:text-3xl ${
+                    className={`flex h-16 min-w-16 items-center justify-center rounded-2xl border px-4 text-2xl font-bold tabular-nums shadow-sm transition-all md:h-20 md:min-w-20 md:text-3xl ${
                       isLast
                         ? revealed
                           ? flash === "bad"
-                            ? "bg-rose-500/15 text-rose-600"
-                            : "bg-emerald-500/15 text-emerald-600"
-                          : "animate-pulse bg-primary/10 text-primary"
-                        : "bg-secondary text-secondary-foreground"
+                            ? "border-rose-500/40 bg-rose-500/15 text-rose-600"
+                            : "border-emerald-500/40 bg-emerald-500/15 text-emerald-600 shadow-[0_0_24px_-4px_rgba(16,185,129,0.55)]"
+                          : `animate-pulse border-dashed border-primary/40 bg-gradient-to-br ${diff.gradient} bg-clip-text text-transparent`
+                        : "border-border bg-secondary/60 text-secondary-foreground"
                     }`}
                   >
                     {item}
@@ -222,8 +275,28 @@ function Index() {
           </div>
         </motion.div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Best streak: {best} · Every puzzle is a fresh pattern — arithmetic, algebraic, alphanumeric and more.
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {(Object.keys(DIFF_META) as Difficulty[]).map((d) => {
+            const m = DIFF_META[d];
+            const Icon = m.icon;
+            return (
+              <div
+                key={d}
+                className={`rounded-2xl border bg-card/60 p-3 backdrop-blur ${
+                  pattern.difficulty === d ? `ring-2 ${m.ring}` : ""
+                }`}
+              >
+                <div className={`mb-1 inline-flex items-center gap-1.5 text-xs font-bold ${m.chip} rounded-full border px-2 py-0.5`}>
+                  <Icon className="h-3 w-3" /> {m.label}
+                </div>
+                <div className="text-xs text-muted-foreground">+{m.xp} XP per solve</div>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Best streak: {best} · Mix of arithmetic, algebraic, recurrence, prime &amp; alphanumeric series.
         </p>
       </div>
 
@@ -235,7 +308,8 @@ function Index() {
               Game over
             </DialogTitle>
             <DialogDescription>
-              Total XP: <span className="font-semibold text-foreground">{exp}</span>
+              Level <span className="font-semibold text-foreground">{level}</span>
+              {" · "}Total XP: <span className="font-semibold text-foreground">{exp}</span>
               {" · "}Solved: <span className="font-semibold text-foreground">{solved}</span>
               {" · "}Best streak: <span className="font-semibold text-foreground">{best}</span>
             </DialogDescription>
@@ -256,32 +330,49 @@ function Scoreboard({
   streak,
   lives,
   lastGain,
+  level,
+  intoLevel,
 }: {
   exp: number;
   streak: number;
   lives: number;
   lastGain: number;
+  level: number;
+  intoLevel: number;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border bg-card px-4 py-2 shadow-sm">
-      <ExpCoin exp={exp} lastGain={lastGain} />
-      <div className="h-8 w-px bg-border" />
-      <Stat label="Streak" value={streak} />
-      <div className="h-8 w-px bg-border" />
-      <div className="flex flex-col items-center">
-        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-          Lives
-        </span>
-        <div className="flex gap-0.5">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Heart
-              key={i}
-              className={`h-4 w-4 ${
-                i < lives ? "fill-rose-500 text-rose-500" : "text-muted-foreground/30"
-              }`}
-            />
-          ))}
+    <div className="flex flex-col items-stretch gap-2 rounded-2xl border bg-card/70 p-3 shadow-lg backdrop-blur-xl">
+      <div className="flex items-center gap-4">
+        <ExpCoin exp={exp} lastGain={lastGain} />
+        <div className="h-8 w-px bg-border" />
+        <div className="flex flex-col items-center">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Level</span>
+          <span className="text-xl font-black tabular-nums text-violet-600">{level}</span>
         </div>
+        <div className="h-8 w-px bg-border" />
+        <Stat label="Streak" value={streak} />
+        <div className="h-8 w-px bg-border" />
+        <div className="flex flex-col items-center">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Lives</span>
+          <div className="flex gap-0.5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Heart
+                key={i}
+                className={`h-4 w-4 ${
+                  i < lives ? "fill-rose-500 text-rose-500" : "text-muted-foreground/30"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+        <motion.div
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-400 via-fuchsia-500 to-violet-600"
+          initial={false}
+          animate={{ width: `${(intoLevel / 100) * 100}%` }}
+          transition={{ type: "spring", stiffness: 120, damping: 20 }}
+        />
       </div>
     </div>
   );
