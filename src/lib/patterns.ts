@@ -4,8 +4,10 @@ export type Pattern = {
   acceptable: string[];
   name: string;
   hint: string;
-  difficulty: "Easy" | "Medium" | "Hard" | "GATE";
+  difficulty: Difficulty;
 };
+
+export type Difficulty = "Easy" | "Medium" | "Hard" | "GATE";
 
 const rand = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
