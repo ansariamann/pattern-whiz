@@ -220,7 +220,7 @@ function Index() {
                           ? flash === "bad"
                             ? "border-rose-500/40 bg-rose-500/15 text-rose-600"
                             : "border-emerald-500/40 bg-emerald-500/15 text-emerald-600 shadow-[0_0_24px_-4px_rgba(16,185,129,0.55)]"
-                          : `animate-pulse border-dashed border-primary/40 bg-gradient-to-br ${diff.gradient} bg-clip-text text-transparent`
+                          : `animate-pulse border-dashed border-primary/50 bg-gradient-to-br ${diff.gradient} text-white shadow-lg`
                         : "border-border bg-secondary/60 text-secondary-foreground"
                     }`}
                   >
