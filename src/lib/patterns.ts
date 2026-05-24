@@ -4,6 +4,7 @@ export type Pattern = {
   acceptable: string[];
   name: string;
   hint: string;
+  difficulty: "Easy" | "Medium" | "Hard" | "GATE";
 };
 
 const rand = (min: number, max: number) =>
