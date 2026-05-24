@@ -619,6 +619,21 @@ const generators = [
   squarePlus,
   fibMultiplied,
   letterSkipCycle,
+  cubesShifted,
+  nSquarePlusOne,
+  diffOfDiffs,
+  multiplyAddIndex,
+  primeGap,
+  alternatingMulSub,
+  squareDiffSeries,
+  geometricMinus,
+  alphaPositionSum,
+  pairSum,
+  tripleStep,
+  divideAdd,
+  sumOfSquares,
+  letterReverseSkip,
+  mixedLetterNumber,
 ];
 
 export function newPattern(lastName?: string): Pattern {
