@@ -151,22 +151,17 @@ function Index() {
     <div className="relative min-h-screen overflow-hidden px-4 py-10">
       {/* Animated background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,#fde68a_0%,#fb7185_25%,#a855f7_55%,#3b82f6_80%,#22d3ee_100%)] dark:bg-[linear-gradient(135deg,#3b0764_0%,#831843_30%,#1e1b4b_60%,#082f49_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-background to-fuchsia-50 dark:from-indigo-950/40 dark:via-background dark:to-fuchsia-950/40" />
         <div
-          className="absolute -top-40 -left-40 h-[36rem] w-[36rem] rounded-full opacity-70 blur-3xl animate-pulse"
-          style={{ background: "radial-gradient(circle, #f472b6 0%, #a855f7 40%, transparent 75%)" }}
+          className="absolute -top-32 -left-32 h-96 w-96 rounded-full opacity-30 blur-3xl"
+          style={{ background: "radial-gradient(circle, #818cf8 0%, transparent 70%)" }}
         />
         <div
-          className="absolute -bottom-40 -right-40 h-[36rem] w-[36rem] rounded-full opacity-70 blur-3xl animate-pulse"
-          style={{ background: "radial-gradient(circle, #22d3ee 0%, #3b82f6 45%, transparent 75%)", animationDelay: "1.5s" }}
+          className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full opacity-30 blur-3xl"
+          style={{ background: "radial-gradient(circle, #e879f9 0%, transparent 70%)" }}
         />
         <div
-          className="absolute top-1/3 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full opacity-50 blur-3xl animate-pulse"
-          style={{ background: "radial-gradient(circle, #facc15 0%, #fb923c 50%, transparent 75%)", animationDelay: "0.8s" }}
-        />
-        <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] dark:bg-background/50" />
-        <div
-          className="absolute inset-0 opacity-[0.07] dark:opacity-[0.1]"
+          className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]"
           style={{
             backgroundImage:
               "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
