@@ -1048,6 +1048,25 @@ const registry: Entry[] = [
   { fn: gateMixedRecur, difficulty: "GATE" },
 ];
 
+registry.push(
+  { fn: evenNumbers, difficulty: "Easy" },
+  { fn: oddNumbers, difficulty: "Easy" },
+  { fn: multiplesOfK, difficulty: "Easy" },
+  { fn: countdown, difficulty: "Easy" },
+  { fn: vowelCycle, difficulty: "Easy" },
+  { fn: arithGeoMix, difficulty: "Medium" },
+  { fn: diffArithmetic, difficulty: "Medium" },
+  { fn: powersOf3, difficulty: "Medium" },
+  { fn: letterMinusNumber, difficulty: "Medium" },
+  { fn: doublePlusPrev, difficulty: "Hard" },
+  { fn: cubeSum, difficulty: "Hard" },
+  { fn: pentagonal, difficulty: "Hard" },
+  { fn: hexagonal, difficulty: "Hard" },
+  { fn: motzkinSeries, difficulty: "GATE" },
+  { fn: partitionSeries, difficulty: "GATE" },
+  { fn: recamanLike, difficulty: "GATE" },
+);
+
 export function newPattern(lastName?: string): Pattern {
   return newPatternFiltered(undefined, lastName);
 }
