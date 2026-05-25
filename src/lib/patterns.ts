@@ -764,6 +764,236 @@ function gateMixedRecur(): RawPattern {
   };
 }
 
+// ---------- More patterns ----------
+
+function evenNumbers(): RawPattern {
+  const start = rand(1, 8) * 2;
+  const arr = Array.from({ length: 5 }, (_, i) => start + i * 2);
+  const ans = start + 10;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Even numbers",
+    hint: "Consecutive even numbers.",
+  };
+}
+
+function oddNumbers(): RawPattern {
+  const start = rand(1, 8) * 2 + 1;
+  const arr = Array.from({ length: 5 }, (_, i) => start + i * 2);
+  const ans = start + 10;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Odd numbers",
+    hint: "Consecutive odd numbers.",
+  };
+}
+
+function multiplesOfK(): RawPattern {
+  const k = rand(3, 9);
+  const arr = Array.from({ length: 5 }, (_, i) => k * (i + 1));
+  const ans = k * 6;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Multiples of k",
+    hint: "Multiples of a single small number.",
+  };
+}
+
+function countdown(): RawPattern {
+  const start = rand(20, 40);
+  const step = rand(2, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => start - i * step);
+  const ans = start - 5 * step;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Countdown",
+    hint: "Decreases by a fixed amount.",
+  };
+}
+
+function vowelCycle(): RawPattern {
+  const vowels = ["A", "E", "I", "O", "U"];
+  const arr = Array.from({ length: 6 }, (_, i) => vowels[i % 5]);
+  return {
+    series: arr,
+    answer: "E",
+    acceptable: ["E", "e"],
+    name: "Vowel cycle",
+    hint: "Repeats the vowels A, E, I, O, U.",
+  };
+}
+
+function arithGeoMix(): RawPattern {
+  // a, a+d, (a+d)*r, (a+d)*r + d, ...
+  const a = rand(2, 5);
+  const d = rand(2, 4);
+  const r = rand(2, 3);
+  const arr = [a];
+  for (let i = 1; i < 5; i++) {
+    arr.push(i % 2 === 1 ? arr[i - 1] + d : arr[i - 1] * r);
+  }
+  const next = arr.length % 2 === 1 ? arr[arr.length - 1] + d : arr[arr.length - 1] * r;
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "Add then multiply",
+    hint: "Alternates between +d and ×r.",
+  };
+}
+
+function diffArithmetic(): RawPattern {
+  // differences themselves grow arithmetically
+  let cur = rand(1, 10);
+  let d = rand(2, 4);
+  const step = rand(1, 3);
+  const arr = [cur];
+  for (let i = 0; i < 4; i++) {
+    cur += d;
+    arr.push(cur);
+    d += step;
+  }
+  const ans = cur + d;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Differences grow",
+    hint: "Gap between terms grows by a fixed amount.",
+  };
+}
+
+function powersOf3(): RawPattern {
+  const start = rand(0, 2);
+  const arr = Array.from({ length: 5 }, (_, i) => 3 ** (start + i));
+  const ans = 3 ** (start + 5);
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Powers of 3",
+    hint: "Each term is the next power of 3.",
+  };
+}
+
+function letterMinusNumber(): RawPattern {
+  // Z26, Y25, X24, ...
+  const start = rand(20, 25);
+  const arr = Array.from({ length: 4 }, (_, i) => {
+    const pos = start - i;
+    return `${String.fromCharCode(65 + pos)}${pos + 1}`;
+  });
+  const pos = start - 4;
+  const ans = `${String.fromCharCode(65 + pos)}${pos + 1}`;
+  return {
+    series: arr,
+    answer: ans,
+    acceptable: [ans, ans.toLowerCase()],
+    name: "Letter = position",
+    hint: "Letter steps back and number equals its position.",
+  };
+}
+
+function doublePlusPrev(): RawPattern {
+  // a(n) = 2*a(n-1) + a(n-2) variant already exists (Pell). Here: a(n)=a(n-1)+2*a(n-2)
+  const arr = [1, 2];
+  for (let i = 0; i < 4; i++) arr.push(arr[arr.length - 1] + 2 * arr[arr.length - 2]);
+  const next = arr[arr.length - 1] + 2 * arr[arr.length - 2];
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "a(n−1) + 2·a(n−2)",
+    hint: "Each term = previous + twice the one before.",
+  };
+}
+
+function cubeSum(): RawPattern {
+  // 1, 1+8=9, 9+27=36, 36+64=100, 100+125=225, next +216=441
+  const arr = [1];
+  for (let n = 2; n <= 5; n++) arr.push(arr[arr.length - 1] + n ** 3);
+  const ans = arr[arr.length - 1] + 216;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Running sum of cubes",
+    hint: "Add the next perfect cube each time.",
+  };
+}
+
+function pentagonal(): RawPattern {
+  // P(n) = n(3n-1)/2 : 1, 5, 12, 22, 35, 51
+  const f = (n: number) => (n * (3 * n - 1)) / 2;
+  const arr = Array.from({ length: 5 }, (_, i) => f(i + 1));
+  const ans = f(6);
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Pentagonal numbers",
+    hint: "n(3n−1)/2.",
+  };
+}
+
+function hexagonal(): RawPattern {
+  // H(n) = n(2n-1): 1, 6, 15, 28, 45, 66
+  const f = (n: number) => n * (2 * n - 1);
+  const arr = Array.from({ length: 5 }, (_, i) => f(i + 1));
+  const ans = f(6);
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Hexagonal numbers",
+    hint: "n(2n−1).",
+  };
+}
+
+function motzkinSeries(): RawPattern {
+  // 1, 1, 2, 4, 9, 21, 51, 127
+  return {
+    series: ["1", "1", "2", "4", "9", "21"],
+    answer: "51",
+    acceptable: ["51"],
+    name: "Motzkin numbers",
+    hint: "Non-crossing chords on a circle.",
+  };
+}
+
+function partitionSeries(): RawPattern {
+  // p(n): 1,1,2,3,5,7,11,15,22
+  return {
+    series: ["1", "2", "3", "5", "7", "11"],
+    answer: "15",
+    acceptable: ["15"],
+    name: "Integer partitions",
+    hint: "Number of partitions of n.",
+  };
+}
+
+function recamanLike(): RawPattern {
+  // a(n) = a(n-1) + n if positive & new, else a(n-1)+n.  Simplified deterministic version:
+  // Use Recamán prefix: 0,1,3,6,2,7,13,20
+  return {
+    series: ["0", "1", "3", "6", "2", "7"],
+    answer: "13",
+    acceptable: ["13"],
+    name: "Recamán sequence",
+    hint: "Subtract n if possible & unseen, else add n.",
+  };
+}
+
+// ---------- Registry additions ----------
+
 // ---------- Registry ----------
 
 type Entry = { fn: () => RawPattern; difficulty: Difficulty };
