@@ -357,8 +357,8 @@ function Scoreboard({
   intoLevel: number;
 }) {
   return (
-    <div className="flex flex-col items-stretch gap-2 rounded-2xl border bg-card/70 p-3 shadow-lg backdrop-blur-xl">
-      <div className="flex items-center gap-4">
+    <div className="flex w-full flex-col items-stretch gap-2 rounded-2xl border bg-card/70 p-3 shadow-lg backdrop-blur-xl sm:w-auto">
+      <div className="flex items-center justify-between gap-3 sm:justify-start sm:gap-4">
         <ExpCoin exp={exp} lastGain={lastGain} />
         <div className="h-8 w-px bg-border" />
         <div className="flex flex-col items-center">
