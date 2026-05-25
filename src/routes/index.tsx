@@ -12,8 +12,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Heart, Lightbulb, RotateCcw, Sparkles, Trophy, Zap, Flame, GraduationCap } from "lucide-react";
-import { newPattern, checkAnswer, type Pattern, type Difficulty } from "@/lib/patterns";
+import { Heart, Lightbulb, RotateCcw, Sparkles, Trophy, Zap, Flame, GraduationCap, Shuffle } from "lucide-react";
+import { newPatternFiltered, checkAnswer, type Pattern, type Difficulty } from "@/lib/patterns";
+
+type DiffFilter = Difficulty | "All";
 
 const DIFF_META: Record<
   Difficulty,
@@ -42,7 +44,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [pattern, setPattern] = useState<Pattern>(() => newPattern());
+  const [filter, setFilter] = useState<DiffFilter>("All");
+  const [pattern, setPattern] = useState<Pattern>(() => newPatternFiltered("All"));
   const [input, setInput] = useState("");
   const [exp, setExp] = useState(0);
   const [solved, setSolved] = useState(0);
@@ -67,7 +70,7 @@ function Index() {
   }, [flash]);
 
   const nextRound = (resetAll = false) => {
-    setPattern((p) => newPattern(p.name));
+    setPattern((p) => newPatternFiltered(filter, p.name));
     setInput("");
     setRevealed(false);
     setHintUsed(false);
@@ -79,6 +82,14 @@ function Index() {
       setOver(false);
       setLastGain(0);
     }
+  };
+
+  const changeFilter = (f: DiffFilter) => {
+    setFilter(f);
+    setPattern((p) => newPatternFiltered(f, p.name));
+    setInput("");
+    setRevealed(false);
+    setHintUsed(false);
   };
 
   const submit = () => {
@@ -94,7 +105,7 @@ function Index() {
       setStreak(newStreak);
       setBest((b) => Math.max(b, newStreak));
       setFlash("good");
-      toast.success(`Correct! +${gained} XP`, {
+      toast.success("Correct!", {
         description: `${pattern.difficulty} · ${pattern.name}`,
       });
       setRevealed(true);
@@ -165,7 +176,7 @@ function Index() {
             <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-600">
               <Sparkles className="h-3 w-3" /> Aptitude trainer
             </div>
-            <h1 className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-4xl font-black tracking-tight text-transparent md:text-5xl">
+            <h1 className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-3xl font-black tracking-tight text-transparent sm:text-4xl md:text-5xl">
               Pattern Whiz
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -174,6 +185,32 @@ function Index() {
           </div>
           <Scoreboard exp={exp} streak={streak} lives={lives} lastGain={lastGain} level={level} intoLevel={intoLevel} />
         </header>
+
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <Shuffle className="h-3 w-3" /> Difficulty
+          </span>
+          {(["All", "Easy", "Medium", "Hard", "GATE"] as DiffFilter[]).map((f) => {
+            const active = filter === f;
+            const meta = f === "All" ? null : DIFF_META[f];
+            return (
+              <button
+                key={f}
+                type="button"
+                onClick={() => changeFilter(f)}
+                className={`rounded-full border px-3 py-1 text-xs font-bold transition-all ${
+                  active
+                    ? meta
+                      ? `bg-gradient-to-r ${meta.gradient} text-white border-transparent shadow-md`
+                      : "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white border-transparent shadow-md"
+                    : "border-border bg-card/60 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f}
+              </button>
+            );
+          })}
+        </div>
 
         <motion.div
           key={shakeKey}
@@ -193,7 +230,7 @@ function Index() {
               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${diff.chip}`}
             >
               <diff.icon className="h-3.5 w-3.5" />
-              {diff.label} · +{diff.xp} XP
+              {diff.label}
             </span>
             <div className="flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground">
               <span>Solved {solved}</span>
@@ -204,7 +241,7 @@ function Index() {
             </div>
           </div>
 
-          <div className="mb-8 flex flex-wrap items-center justify-center gap-3 md:gap-4">
+          <div className="mb-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3 md:gap-4">
             <AnimatePresence mode="popLayout">
               {displaySeries.map((item, i) => {
                 const isLast = i === displaySeries.length - 1;
@@ -214,7 +251,7 @@ function Index() {
                     initial={{ opacity: 0, y: 12, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ delay: i * 0.06, type: "spring", stiffness: 260 }}
-                    className={`flex h-16 min-w-16 items-center justify-center rounded-2xl border px-4 text-2xl font-bold tabular-nums shadow-sm transition-all md:h-20 md:min-w-20 md:text-3xl ${
+                    className={`flex h-12 min-w-12 items-center justify-center rounded-xl border px-2.5 text-lg font-bold tabular-nums shadow-sm transition-all sm:h-16 sm:min-w-16 sm:rounded-2xl sm:px-4 sm:text-2xl md:h-20 md:min-w-20 md:text-3xl ${
                       isLast
                         ? revealed
                           ? flash === "bad"
@@ -275,27 +312,7 @@ function Index() {
           </div>
         </motion.div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {(Object.keys(DIFF_META) as Difficulty[]).map((d) => {
-            const m = DIFF_META[d];
-            const Icon = m.icon;
-            return (
-              <div
-                key={d}
-                className={`rounded-2xl border bg-card/60 p-3 backdrop-blur ${
-                  pattern.difficulty === d ? `ring-2 ${m.ring}` : ""
-                }`}
-              >
-                <div className={`mb-1 inline-flex items-center gap-1.5 text-xs font-bold ${m.chip} rounded-full border px-2 py-0.5`}>
-                  <Icon className="h-3 w-3" /> {m.label}
-                </div>
-                <div className="text-xs text-muted-foreground">+{m.xp} XP per solve</div>
-              </div>
-            );
-          })}
-        </div>
-
-        <p className="mt-4 text-center text-xs text-muted-foreground">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           Best streak: {best} · Mix of arithmetic, algebraic, recurrence, prime &amp; alphanumeric series.
         </p>
       </div>
@@ -309,7 +326,6 @@ function Index() {
             </DialogTitle>
             <DialogDescription>
               Level <span className="font-semibold text-foreground">{level}</span>
-              {" · "}Total XP: <span className="font-semibold text-foreground">{exp}</span>
               {" · "}Solved: <span className="font-semibold text-foreground">{solved}</span>
               {" · "}Best streak: <span className="font-semibold text-foreground">{best}</span>
             </DialogDescription>
@@ -341,8 +357,8 @@ function Scoreboard({
   intoLevel: number;
 }) {
   return (
-    <div className="flex flex-col items-stretch gap-2 rounded-2xl border bg-card/70 p-3 shadow-lg backdrop-blur-xl">
-      <div className="flex items-center gap-4">
+    <div className="flex w-full flex-col items-stretch gap-2 rounded-2xl border bg-card/70 p-3 shadow-lg backdrop-blur-xl sm:w-auto">
+      <div className="flex items-center justify-between gap-3 sm:justify-start sm:gap-4">
         <ExpCoin exp={exp} lastGain={lastGain} />
         <div className="h-8 w-px bg-border" />
         <div className="flex flex-col items-center">
