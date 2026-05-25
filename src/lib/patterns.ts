@@ -819,11 +819,23 @@ const registry: Entry[] = [
 ];
 
 export function newPattern(lastName?: string): Pattern {
-  let entry = registry[rand(0, registry.length - 1)];
+  return newPatternFiltered(undefined, lastName);
+}
+
+export function newPatternFiltered(
+  difficulty?: Difficulty | "All",
+  lastName?: string,
+): Pattern {
+  const pool =
+    !difficulty || difficulty === "All"
+      ? registry
+      : registry.filter((e) => e.difficulty === difficulty);
+  const src = pool.length ? pool : registry;
+  let entry = src[rand(0, src.length - 1)];
   let p = entry.fn();
   let tries = 0;
   while (p.name === lastName && tries < 5) {
-    entry = registry[rand(0, registry.length - 1)];
+    entry = src[rand(0, src.length - 1)];
     p = entry.fn();
     tries++;
   }
