@@ -1250,6 +1250,273 @@ function eulerTotientPrimes(): RawPattern {
   };
 }
 
+// ---------- Batch 3 ----------
+
+function arithStepLarge(): RawPattern {
+  const start = rand(10, 30);
+  const step = rand(7, 15);
+  const arr = Array.from({ length: 5 }, (_, i) => start + i * step);
+  const ans = start + 5 * step;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Big arithmetic step",
+    hint: "Add the same large number each time.",
+  };
+}
+
+function alphabetReverseSimple(): RawPattern {
+  const start = rand(20, 25);
+  const arr = Array.from({ length: 5 }, (_, i) => String.fromCharCode(65 + start - i));
+  const ans = String.fromCharCode(65 + start - 5);
+  return {
+    series: arr,
+    answer: ans,
+    acceptable: [ans, ans.toLowerCase()],
+    name: "Alphabet reverse",
+    hint: "Letters go backward by 1.",
+  };
+}
+
+function squaresPlusOne(): RawPattern {
+  const arr = Array.from({ length: 5 }, (_, i) => (i + 1) ** 2 + 1);
+  return {
+    series: arr.map(String),
+    answer: "37",
+    acceptable: ["37"],
+    name: "n² + 1",
+    hint: "Square plus 1.",
+  };
+}
+
+function multiplyMinus(): RawPattern {
+  let cur = rand(2, 4);
+  const m = rand(2, 3);
+  const k = rand(1, 3);
+  const arr = [cur];
+  for (let i = 0; i < 4; i++) {
+    cur = cur * m - k;
+    arr.push(cur);
+  }
+  const ans = cur * m - k;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "× m − k",
+    hint: "Multiply, then subtract a constant.",
+  };
+}
+
+function consonantCycle(): RawPattern {
+  const cons = ["B", "C", "D", "F", "G"];
+  const arr = Array.from({ length: 6 }, (_, i) => cons[i % 5]);
+  return {
+    series: arr,
+    answer: "C",
+    acceptable: ["C", "c"],
+    name: "Consonant cycle",
+    hint: "Cycles through the first 5 consonants.",
+  };
+}
+
+function alternatingPlusMinus(): RawPattern {
+  let cur = rand(20, 40);
+  const a = rand(3, 7);
+  const b = rand(2, 5);
+  const arr = [cur];
+  for (let i = 0; i < 4; i++) {
+    cur = i % 2 === 0 ? cur + a : cur - b;
+    arr.push(cur);
+  }
+  const ans = arr.length % 2 === 1 ? cur + a : cur - b;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Alternating +/−",
+    hint: "Adds a, then subtracts b, repeating.",
+  };
+}
+
+function indexTimesNext(): RawPattern {
+  // n*(n+1): 2, 6, 12, 20, 30, 42
+  const arr = Array.from({ length: 5 }, (_, i) => (i + 1) * (i + 2));
+  return {
+    series: arr.map(String),
+    answer: "42",
+    acceptable: ["42"],
+    name: "n(n+1)",
+    hint: "Product of n and n+1.",
+  };
+}
+
+function fibPlusN(): RawPattern {
+  // Fibonacci + n
+  const fib = [1, 1, 2, 3, 5, 8, 13];
+  const arr = fib.slice(0, 5).map((f, i) => f + (i + 1));
+  const ans = fib[5] + 6;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Fibonacci + n",
+    hint: "nth Fibonacci plus n.",
+  };
+}
+
+function digitProduct(): RawPattern {
+  // prev + product of digits
+  let cur = rand(12, 25);
+  const arr = [cur];
+  for (let i = 0; i < 4; i++) {
+    const p = String(cur).split("").reduce((s, d) => s * Number(d), 1);
+    cur = cur + p;
+    arr.push(cur);
+  }
+  const p = String(cur).split("").reduce((s, d) => s * Number(d), 1);
+  const ans = cur + p;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Add digit product",
+    hint: "Add product of digits to get next.",
+  };
+}
+
+function letterCubeIndex(): RawPattern {
+  // A1, B8, C27, D64, E125 → F216
+  const start = rand(0, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => `${String.fromCharCode(65 + start + i)}${(i + 1) ** 3}`);
+  const ans = `${String.fromCharCode(65 + start + 5)}216`;
+  return {
+    series: arr,
+    answer: ans,
+    acceptable: [ans, ans.toLowerCase()],
+    name: "Letter + cube",
+    hint: "Letters +1, numbers are cubes.",
+  };
+}
+
+function nthPrimePlusN(): RawPattern {
+  const ps = [2, 3, 5, 7, 11, 13, 17];
+  const arr = ps.slice(0, 5).map((p, i) => p + (i + 1));
+  const ans = ps[5] + 6;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "nth prime + n",
+    hint: "Add position to the nth prime.",
+  };
+}
+
+function powerMinusSquare(): RawPattern {
+  // 2^n - n^2
+  const arr = Array.from({ length: 6 }, (_, i) => 2 ** (i + 1) - (i + 1) ** 2);
+  return {
+    series: arr.slice(0, 5).map(String),
+    answer: String(arr[5]),
+    acceptable: [String(arr[5])],
+    name: "2ⁿ − n²",
+    hint: "Power of 2 minus square of n.",
+  };
+}
+
+function tribonacci(): RawPattern {
+  // 0, 1, 1, 2, 4, 7, 13, 24, 44
+  return {
+    series: ["0", "1", "1", "2", "4", "7"],
+    answer: "13",
+    acceptable: ["13"],
+    name: "Tribonacci",
+    hint: "Each term = sum of the previous three.",
+  };
+}
+
+function padovan(): RawPattern {
+  // 1, 1, 1, 2, 2, 3, 4, 5, 7, 9
+  return {
+    series: ["1", "1", "1", "2", "2", "3"],
+    answer: "4",
+    acceptable: ["4"],
+    name: "Padovan sequence",
+    hint: "P(n) = P(n−2) + P(n−3).",
+  };
+}
+
+function sylvester(): RawPattern {
+  // 2, 3, 7, 43, 1807   a(n) = a(n-1)^2 - a(n-1) + 1
+  return {
+    series: ["2", "3", "7", "43"],
+    answer: "1807",
+    acceptable: ["1807"],
+    name: "Sylvester sequence",
+    hint: "a(n) = a(n−1)² − a(n−1) + 1.",
+  };
+}
+
+function harmonicDenoms(): RawPattern {
+  // denominators of partial harmonic in lowest terms — use n(n+1)/2 reciprocal style:
+  // simpler: 1, 3, 6, 10, 15, 21 (triangular) already exists; use n^2+1 chain
+  // Use Lazy caterer: 1, 2, 4, 7, 11, 16, 22, 29
+  return {
+    series: ["1", "2", "4", "7", "11", "16"],
+    answer: "22",
+    acceptable: ["22"],
+    name: "Lazy caterer",
+    hint: "Max pieces from n straight cuts of a pancake.",
+  };
+}
+
+function magicSquaresSum(): RawPattern {
+  // n(n^2+1)/2: 1, 5, 15, 34, 65, 111
+  const f = (n: number) => (n * (n * n + 1)) / 2;
+  const arr = Array.from({ length: 5 }, (_, i) => f(i + 1));
+  const ans = f(6);
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Magic square constant",
+    hint: "n(n²+1)/2.",
+  };
+}
+
+function collatzPath(): RawPattern {
+  // Collatz starting at 6: 6, 3, 10, 5, 16, 8, 4
+  return {
+    series: ["6", "3", "10", "5", "16", "8"],
+    answer: "4",
+    acceptable: ["4"],
+    name: "Collatz path",
+    hint: "If even, halve; if odd, 3n+1.",
+  };
+}
+
+registry.push(
+  { fn: arithStepLarge, difficulty: "Easy" },
+  { fn: alphabetReverseSimple, difficulty: "Easy" },
+  { fn: squaresPlusOne, difficulty: "Easy" },
+  { fn: consonantCycle, difficulty: "Easy" },
+  { fn: multiplyMinus, difficulty: "Medium" },
+  { fn: alternatingPlusMinus, difficulty: "Medium" },
+  { fn: indexTimesNext, difficulty: "Medium" },
+  { fn: fibPlusN, difficulty: "Medium" },
+  { fn: digitProduct, difficulty: "Hard" },
+  { fn: letterCubeIndex, difficulty: "Hard" },
+  { fn: nthPrimePlusN, difficulty: "Hard" },
+  { fn: powerMinusSquare, difficulty: "Hard" },
+  { fn: tribonacci, difficulty: "GATE" },
+  { fn: padovan, difficulty: "GATE" },
+  { fn: sylvester, difficulty: "GATE" },
+  { fn: harmonicDenoms, difficulty: "GATE" },
+  { fn: magicSquaresSum, difficulty: "GATE" },
+  { fn: collatzPath, difficulty: "GATE" },
+);
+
 // ---------- Registry ----------
 
 type Entry = { fn: () => RawPattern; difficulty: Difficulty };
