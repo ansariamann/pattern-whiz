@@ -1496,27 +1496,6 @@ function collatzPath(): RawPattern {
   };
 }
 
-registry.push(
-  { fn: arithStepLarge, difficulty: "Easy" },
-  { fn: alphabetReverseSimple, difficulty: "Easy" },
-  { fn: squaresPlusOne, difficulty: "Easy" },
-  { fn: consonantCycle, difficulty: "Easy" },
-  { fn: multiplyMinus, difficulty: "Medium" },
-  { fn: alternatingPlusMinus, difficulty: "Medium" },
-  { fn: indexTimesNext, difficulty: "Medium" },
-  { fn: fibPlusN, difficulty: "Medium" },
-  { fn: digitProduct, difficulty: "Hard" },
-  { fn: letterCubeIndex, difficulty: "Hard" },
-  { fn: nthPrimePlusN, difficulty: "Hard" },
-  { fn: powerMinusSquare, difficulty: "Hard" },
-  { fn: tribonacci, difficulty: "GATE" },
-  { fn: padovan, difficulty: "GATE" },
-  { fn: sylvester, difficulty: "GATE" },
-  { fn: harmonicDenoms, difficulty: "GATE" },
-  { fn: magicSquaresSum, difficulty: "GATE" },
-  { fn: collatzPath, difficulty: "GATE" },
-);
-
 // ---------- Registry ----------
 
 type Entry = { fn: () => RawPattern; difficulty: Difficulty };
