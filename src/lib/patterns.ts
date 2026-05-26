@@ -994,6 +994,262 @@ function recamanLike(): RawPattern {
 
 // ---------- Registry additions ----------
 
+// ---------- Even more patterns ----------
+
+function decreasingMultiples(): RawPattern {
+  const k = rand(3, 8);
+  const start = rand(8, 12);
+  const arr = Array.from({ length: 5 }, (_, i) => k * (start - i));
+  const ans = k * (start - 5);
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Decreasing multiples",
+    hint: "Multiples of k, decreasing.",
+  };
+}
+
+function alphabetPairs(): RawPattern {
+  // AB, CD, EF, GH, IJ → KL
+  const start = rand(0, 14);
+  const arr = Array.from({ length: 5 }, (_, i) => {
+    const p = start + i * 2;
+    return `${String.fromCharCode(65 + p)}${String.fromCharCode(66 + p)}`;
+  });
+  const p = start + 10;
+  const ans = `${String.fromCharCode(65 + p)}${String.fromCharCode(66 + p)}`;
+  return {
+    series: arr,
+    answer: ans,
+    acceptable: [ans, ans.toLowerCase()],
+    name: "Letter pairs",
+    hint: "Consecutive pairs of letters.",
+  };
+}
+
+function halving(): RawPattern {
+  const start = 2 ** rand(6, 9);
+  const arr = [start];
+  for (let i = 0; i < 4; i++) arr.push(arr[arr.length - 1] / 2);
+  const ans = arr[arr.length - 1] / 2;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Halving",
+    hint: "Each term is half of the previous.",
+  };
+}
+
+function plusOneTimesTwo(): RawPattern {
+  // (prev+1)*2
+  let cur = rand(1, 4);
+  const arr = [cur];
+  for (let i = 0; i < 4; i++) {
+    cur = (cur + 1) * 2;
+    arr.push(cur);
+  }
+  const ans = (cur + 1) * 2;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "(prev + 1) × 2",
+    hint: "Add 1, then double.",
+  };
+}
+
+function digitReverse(): RawPattern {
+  // pairs (n, reverse(n)): 12, 21, 13, 31, 14, 41
+  const arr: string[] = [];
+  for (let n = 2; n <= 4; n++) {
+    arr.push(`1${n}`);
+    arr.push(`${n}1`);
+  }
+  return {
+    series: arr,
+    answer: "15",
+    acceptable: ["15"],
+    name: "Number, then reverse",
+    hint: "Each pair is a number and its reverse.",
+  };
+}
+
+function alphaSkipTwo(): RawPattern {
+  // A, D, G, J, M → P (skip 2 letters each time)
+  const start = rand(0, 8);
+  const arr = Array.from({ length: 5 }, (_, i) => String.fromCharCode(65 + start + i * 3));
+  const ans = String.fromCharCode(65 + start + 15);
+  return {
+    series: arr,
+    answer: ans,
+    acceptable: [ans, ans.toLowerCase()],
+    name: "Skip 2 letters",
+    hint: "Letter advances by 3 each time.",
+  };
+}
+
+function squaresMinusOne(): RawPattern {
+  // n^2 - 1: 0,3,8,15,24,35
+  const arr = Array.from({ length: 5 }, (_, i) => (i + 1) ** 2 - 1);
+  const ans = 36 - 1;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "n² − 1",
+    hint: "Square minus one.",
+  };
+}
+
+function productOfTwo(): RawPattern {
+  // n*(n+2): 3, 8, 15, 24, 35, 48
+  const arr = Array.from({ length: 5 }, (_, i) => (i + 1) * (i + 3));
+  const ans = 6 * 8;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "n(n+2)",
+    hint: "Product of n and n+2.",
+  };
+}
+
+function geoPlusArith(): RawPattern {
+  // a(n) = 2^n + n
+  const arr = Array.from({ length: 5 }, (_, i) => 2 ** (i + 1) + (i + 1));
+  const ans = 2 ** 6 + 6;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "2ⁿ + n",
+    hint: "Power of 2 plus its index.",
+  };
+}
+
+function letterPlusSquare(): RawPattern {
+  // A1, C4, E9, G16, I25 → K36
+  const start = rand(0, 8);
+  const arr = Array.from({ length: 5 }, (_, i) => `${String.fromCharCode(65 + start + i * 2)}${(i + 1) ** 2}`);
+  const ans = `${String.fromCharCode(65 + start + 10)}36`;
+  return {
+    series: arr,
+    answer: ans,
+    acceptable: [ans, ans.toLowerCase()],
+    name: "Letter +2, number = n²",
+    hint: "Letter steps by 2; number is n².",
+  };
+}
+
+function differenceGeometric(): RawPattern {
+  // differences double: +2, +4, +8, +16, +32
+  let cur = rand(1, 5);
+  const arr = [cur];
+  let d = 2;
+  for (let i = 0; i < 4; i++) {
+    cur += d;
+    arr.push(cur);
+    d *= 2;
+  }
+  const ans = cur + d;
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Differences double",
+    hint: "Gaps between terms double each time.",
+  };
+}
+
+function tripleMinusPrev(): RawPattern {
+  // a(n) = 3*a(n-1) - 2*a(n-2)  → gives 2^n − 1 style
+  const arr = [1, 3];
+  for (let i = 0; i < 4; i++) arr.push(3 * arr[arr.length - 1] - 2 * arr[arr.length - 2]);
+  const next = 3 * arr[arr.length - 1] - 2 * arr[arr.length - 2];
+  return {
+    series: arr.map(String),
+    answer: String(next),
+    acceptable: [String(next)],
+    name: "3·a(n−1) − 2·a(n−2)",
+    hint: "Linear recurrence with coefficients 3 and −2.",
+  };
+}
+
+function squareTriangular(): RawPattern {
+  // 1, 36, 1225, 41616 - too big. Use centered squares: n^2 + (n-1)^2
+  const f = (n: number) => n * n + (n - 1) * (n - 1);
+  const arr = Array.from({ length: 5 }, (_, i) => f(i + 1));
+  const ans = f(6);
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Centered squares",
+    hint: "n² + (n−1)².",
+  };
+}
+
+function jacobsthal(): RawPattern {
+  // 0, 1, 1, 3, 5, 11, 21, 43, 85
+  const arr = [0, 1, 1, 3, 5, 11];
+  return {
+    series: arr.map(String),
+    answer: "21",
+    acceptable: ["21"],
+    name: "Jacobsthal sequence",
+    hint: "a(n) = a(n−1) + 2·a(n−2).",
+  };
+}
+
+function perrinSeries(): RawPattern {
+  // 3, 0, 2, 3, 2, 5, 5, 7, 10, 12
+  return {
+    series: ["3", "0", "2", "3", "2", "5"],
+    answer: "5",
+    acceptable: ["5"],
+    name: "Perrin sequence",
+    hint: "P(n) = P(n−2) + P(n−3).",
+  };
+}
+
+function centralBinomial(): RawPattern {
+  // C(2n, n): 1, 2, 6, 20, 70, 252, 924
+  return {
+    series: ["1", "2", "6", "20", "70", "252"],
+    answer: "924",
+    acceptable: ["924"],
+    name: "Central binomial",
+    hint: "C(2n, n).",
+  };
+}
+
+function squarePyramidal(): RawPattern {
+  // n(n+1)(2n+1)/6: 1, 5, 14, 30, 55, 91
+  const f = (n: number) => (n * (n + 1) * (2 * n + 1)) / 6;
+  const arr = Array.from({ length: 5 }, (_, i) => f(i + 1));
+  const ans = f(6);
+  return {
+    series: arr.map(String),
+    answer: String(ans),
+    acceptable: [String(ans)],
+    name: "Square pyramidal",
+    hint: "Sum of first n squares.",
+  };
+}
+
+function eulerTotientPrimes(): RawPattern {
+  // φ(p) = p−1 for primes: 1, 2, 4, 6, 10, 12, 16
+  return {
+    series: ["1", "2", "4", "6", "10", "12"],
+    answer: "16",
+    acceptable: ["16"],
+    name: "φ of primes (p−1)",
+    hint: "Euler totient at successive primes.",
+  };
+}
+
 // ---------- Registry ----------
 
 type Entry = { fn: () => RawPattern; difficulty: Difficulty };
@@ -1065,6 +1321,27 @@ registry.push(
   { fn: motzkinSeries, difficulty: "GATE" },
   { fn: partitionSeries, difficulty: "GATE" },
   { fn: recamanLike, difficulty: "GATE" },
+);
+
+registry.push(
+  { fn: decreasingMultiples, difficulty: "Easy" },
+  { fn: alphabetPairs, difficulty: "Easy" },
+  { fn: halving, difficulty: "Easy" },
+  { fn: alphaSkipTwo, difficulty: "Easy" },
+  { fn: plusOneTimesTwo, difficulty: "Medium" },
+  { fn: digitReverse, difficulty: "Medium" },
+  { fn: squaresMinusOne, difficulty: "Medium" },
+  { fn: productOfTwo, difficulty: "Medium" },
+  { fn: geoPlusArith, difficulty: "Medium" },
+  { fn: letterPlusSquare, difficulty: "Hard" },
+  { fn: differenceGeometric, difficulty: "Hard" },
+  { fn: tripleMinusPrev, difficulty: "Hard" },
+  { fn: squareTriangular, difficulty: "Hard" },
+  { fn: jacobsthal, difficulty: "GATE" },
+  { fn: perrinSeries, difficulty: "GATE" },
+  { fn: centralBinomial, difficulty: "GATE" },
+  { fn: squarePyramidal, difficulty: "GATE" },
+  { fn: eulerTotientPrimes, difficulty: "GATE" },
 );
 
 export function newPattern(lastName?: string): Pattern {
