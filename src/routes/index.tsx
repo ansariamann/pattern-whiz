@@ -12,7 +12,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Heart, Lightbulb, RotateCcw, Sparkles, Trophy, Zap, Flame, GraduationCap, Shuffle } from "lucide-react";
+import { Heart, Lightbulb, RotateCcw, Sparkles, Trophy, Zap, Flame, GraduationCap, Shuffle, ArrowRight } from "lucide-react";
 import { newPatternFiltered, checkAnswer, type Pattern, type Difficulty } from "@/lib/patterns";
 
 type DiffFilter = Difficulty | "All";
@@ -28,6 +28,7 @@ const DIFF_META: Record<
 };
 
 const LEVEL_STEP = 100;
+const MAX_LIVES = 5;
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -52,7 +53,7 @@ function Index() {
   const [lastGain, setLastGain] = useState(0);
   const [streak, setStreak] = useState(0);
   const [best, setBest] = useState(0);
-  const [lives, setLives] = useState(3);
+  const [lives, setLives] = useState(MAX_LIVES);
   const [flash, setFlash] = useState<"none" | "good" | "bad">("none");
   const [shakeKey, setShakeKey] = useState(0);
   const [revealed, setRevealed] = useState(false);
@@ -78,7 +79,7 @@ function Index() {
       setExp(0);
       setSolved(0);
       setStreak(0);
-      setLives(3);
+      setLives(MAX_LIVES);
       setOver(false);
       setLastGain(0);
     }
@@ -109,21 +110,22 @@ function Index() {
         description: `${pattern.difficulty} · ${pattern.name}`,
       });
       setRevealed(true);
-      setTimeout(() => nextRound(), 900);
+      setTimeout(() => nextRound(), 1100);
     } else {
       setFlash("bad");
       setShakeKey((k) => k + 1);
       setStreak(0);
       const remaining = lives - 1;
       setLives(remaining);
-      toast.error("Not quite", {
-        description: `Answer was ${pattern.answer} — ${pattern.name}`,
+      toast("Not quite — take a look", {
+        description: `Answer: ${pattern.answer} · ${pattern.name}`,
+        icon: "💡",
       });
       setRevealed(true);
       if (remaining <= 0) {
         setTimeout(() => setOver(true), 700);
       } else {
-        setTimeout(() => nextRound(), 1500);
+        // Wait for user to press Continue so they can absorb the answer
       }
     }
   };
@@ -131,7 +133,6 @@ function Index() {
   const useHint = () => {
     if (hintUsed || revealed) return;
     setHintUsed(true);
-    setStreak(0);
     toast(pattern.hint, { icon: "💡" });
   };
 
@@ -283,10 +284,38 @@ function Index() {
               className="h-12 text-lg"
               disabled={revealed}
             />
-            <Button type="submit" className="h-12 px-6 text-base" disabled={revealed}>
+            <Button
+              type="submit"
+              className="h-12 px-6 text-base"
+              disabled={revealed || !input.trim()}
+            >
               Submit
             </Button>
           </form>
+
+          {revealed && flash === "bad" && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 flex flex-col gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="text-sm">
+                <div className="font-semibold text-rose-600">
+                  Answer: <span className="tabular-nums">{pattern.answer}</span>
+                </div>
+                <div className="text-muted-foreground">
+                  {pattern.name} — {pattern.hint}
+                </div>
+              </div>
+              <Button
+                type="button"
+                onClick={() => nextRound()}
+                className="h-10 shrink-0"
+              >
+                Continue <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Button>
+            </motion.div>
+          )}
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
             <Button
@@ -297,7 +326,7 @@ function Index() {
               disabled={hintUsed || revealed}
             >
               <Lightbulb className="mr-1.5 h-4 w-4" />
-              {hintUsed ? "Hint shown" : "Hint (resets streak)"}
+              {hintUsed ? "Hint shown" : "Show hint"}
             </Button>
             <Button
               type="button"
@@ -313,7 +342,7 @@ function Index() {
         </motion.div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Best streak: {best} · Mix of arithmetic, algebraic, recurrence, prime &amp; alphanumeric series.
+          Best streak: {best} · Press Enter to submit · Take your time — no timer.
         </p>
       </div>
 
