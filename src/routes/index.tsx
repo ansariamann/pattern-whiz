@@ -29,6 +29,34 @@ const DIFF_META: Record<
 
 const LEVEL_STEP = 100;
 const MAX_LIVES = 5;
+const STORAGE_KEY = "pattern-whiz:v1";
+
+type PersistedState = {
+  best: number;
+  highExp: number;
+  highLevel: number;
+  totalSolved: number;
+  filter: DiffFilter;
+};
+
+const loadPersisted = (): Partial<PersistedState> => {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Partial<PersistedState>) : {};
+  } catch {
+    return {};
+  }
+};
+
+const savePersisted = (data: PersistedState) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    /* quota or disabled — ignore */
+  }
+};
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -53,6 +81,9 @@ function Index() {
   const [lastGain, setLastGain] = useState(0);
   const [streak, setStreak] = useState(0);
   const [best, setBest] = useState(0);
+  const [highExp, setHighExp] = useState(0);
+  const [totalSolved, setTotalSolved] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
   const [lives, setLives] = useState(MAX_LIVES);
   const [flash, setFlash] = useState<"none" | "good" | "bad">("none");
   const [shakeKey, setShakeKey] = useState(0);
@@ -63,6 +94,32 @@ function Index() {
   const diff = DIFF_META[pattern.difficulty];
   const level = Math.floor(exp / LEVEL_STEP) + 1;
   const intoLevel = exp % LEVEL_STEP;
+  const highLevel = Math.floor(highExp / LEVEL_STEP) + 1;
+
+  // Hydrate from localStorage once on mount
+  useEffect(() => {
+    const p = loadPersisted();
+    if (typeof p.best === "number") setBest(p.best);
+    if (typeof p.highExp === "number") setHighExp(p.highExp);
+    if (typeof p.totalSolved === "number") setTotalSolved(p.totalSolved);
+    if (p.filter && ["All", "Easy", "Medium", "Hard", "GATE"].includes(p.filter)) {
+      setFilter(p.filter);
+      setPattern((cur) => newPatternFiltered(p.filter as DiffFilter, cur.name));
+    }
+    setHydrated(true);
+  }, []);
+
+  // Persist whenever stats/settings change (after hydration)
+  useEffect(() => {
+    if (!hydrated) return;
+    savePersisted({
+      best,
+      highExp,
+      highLevel: Math.floor(highExp / LEVEL_STEP) + 1,
+      totalSolved,
+      filter,
+    });
+  }, [best, highExp, totalSolved, filter, hydrated]);
 
   useEffect(() => {
     if (flash === "none") return;
@@ -102,9 +159,11 @@ function Index() {
       const gained = base + bonus;
       setExp((s) => s + gained);
       setSolved((n) => n + 1);
+      setTotalSolved((n) => n + 1);
       setLastGain(gained);
       setStreak(newStreak);
       setBest((b) => Math.max(b, newStreak));
+      setHighExp((h) => Math.max(h, exp + gained));
       setFlash("good");
       toast.success("Correct!", {
         description: `${pattern.difficulty} · ${pattern.name}`,
@@ -342,7 +401,7 @@ function Index() {
         </motion.div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Best streak: {best} · Press Enter to submit · Take your time — no timer.
+          Best streak: {best} · Top level: {highLevel} ({highExp} XP) · Solved all-time: {totalSolved}
         </p>
       </div>
 
