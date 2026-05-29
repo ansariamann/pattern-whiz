@@ -400,10 +400,10 @@ function Scoreboard({
         <div className="flex flex-col items-center">
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Lives</span>
           <div className="flex gap-0.5">
-            {Array.from({ length: 3 }).map((_, i) => (
+            {Array.from({ length: MAX_LIVES }).map((_, i) => (
               <Heart
                 key={i}
-                className={`h-4 w-4 ${
+                className={`h-3.5 w-3.5 ${
                   i < lives ? "fill-rose-500 text-rose-500" : "text-muted-foreground/30"
                 }`}
               />
