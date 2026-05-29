@@ -1611,6 +1611,158 @@ registry.push(
   { fn: collatzPath, difficulty: "GATE" },
 );
 
+// ===== Competitive-exam style letter series (SSC / Bank / CAT / GATE reasoning) =====
+
+const L = (n: number) => String.fromCharCode(65 + ((n % 26) + 26) % 26);
+
+function consecutiveLetters(): RawPattern {
+  const s = rand(0, 18);
+  const arr = Array.from({ length: 5 }, (_, i) => L(s + i));
+  const ans = L(s + 5);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Consecutive letters", hint: "Each letter is the next in the alphabet." };
+}
+
+function letterGapIncreasing(): RawPattern {
+  // A, C, F, J, O, ? -> U  (gaps 2,3,4,5,6)
+  const s = rand(0, 5);
+  const arr: string[] = [L(s)];
+  let p = s;
+  for (let i = 2; i <= 5; i++) { p += i; arr.push(L(p)); }
+  const ans = L(p + 6);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Increasing-gap letters", hint: "Gap between letters grows by 1 each time." };
+}
+
+function letterReverseGapIncreasing(): RawPattern {
+  // Y, W, T, P, K, ? -> E  (back 2,3,4,5,6)
+  const s = rand(20, 25);
+  const arr: string[] = [L(s)];
+  let p = s;
+  for (let i = 2; i <= 5; i++) { p -= i; arr.push(L(p)); }
+  const ans = L(p - 6);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Reverse increasing-gap", hint: "Move backward; gap grows by 1 each step." };
+}
+
+function mirrorLetterPairs(): RawPattern {
+  // AZ, BY, CX, DW, EV, ? -> FU
+  const s = rand(0, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => `${L(s + i)}${L(25 - s - i)}`);
+  const ans = `${L(s + 5)}${L(25 - s - 5)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Mirror letter pairs", hint: "First letter goes forward, second is its alphabet mirror." };
+}
+
+function letterPairsSkipOne(): RawPattern {
+  // AB, DE, GH, JK, MN, ? -> PQ
+  const s = rand(0, 4);
+  const arr = Array.from({ length: 5 }, (_, i) => `${L(s + i * 3)}${L(s + i * 3 + 1)}`);
+  const ans = `${L(s + 15)}${L(s + 16)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Letter pairs +3", hint: "Pairs of consecutive letters; each pair starts 3 ahead." };
+}
+
+function letterTriplets(): RawPattern {
+  // ACE, BDF, CEG, DFH, ? -> EGI
+  const s = rand(0, 4);
+  const arr = Array.from({ length: 4 }, (_, i) => `${L(s + i)}${L(s + i + 2)}${L(s + i + 4)}`);
+  const ans = `${L(s + 4)}${L(s + 6)}${L(s + 8)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Triplets +1", hint: "Each triplet is the previous shifted by one letter." };
+}
+
+function tripleShiftEach(): RawPattern {
+  // BAT, CBU, DCV, EDW, ? -> FEX
+  const s = rand(0, 5);
+  const arr = Array.from({ length: 4 }, (_, i) => `${L(s + 1 + i)}${L(s + i)}${L(s + 19 + i)}`);
+  const ans = `${L(s + 5)}${L(s + 4)}${L(s + 23)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Three letters +1 each", hint: "Each letter in the group advances by one." };
+}
+
+function reverseTriplets(): RawPattern {
+  // ZYX, WVU, TSR, QPO, ? -> NML
+  const s = rand(22, 25);
+  const arr = Array.from({ length: 4 }, (_, i) => `${L(s - i * 3)}${L(s - i * 3 - 1)}${L(s - i * 3 - 2)}`);
+  const ans = `${L(s - 12)}${L(s - 13)}${L(s - 14)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Reverse triplets", hint: "Groups of three letters going backward." };
+}
+
+function alphaPalindrome(): RawPattern {
+  // ABA, CDC, EFE, GHG, ? -> IJI
+  const s = rand(0, 8);
+  const arr = Array.from({ length: 4 }, (_, i) => `${L(s + i * 2)}${L(s + i * 2 + 1)}${L(s + i * 2)}`);
+  const ans = `${L(s + 8)}${L(s + 9)}${L(s + 8)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Letter palindromes", hint: "Three-letter palindromes shifting by 2." };
+}
+
+function dualStepLetters(): RawPattern {
+  // JE, LH, NK, PN, ? -> RQ (first +2, second +3)
+  const s1 = rand(0, 10);
+  const s2 = rand(0, 10);
+  const arr = Array.from({ length: 4 }, (_, i) => `${L(s1 + i * 2)}${L(s2 + i * 3)}`);
+  const ans = `${L(s1 + 8)}${L(s2 + 12)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Dual-step pairs", hint: "First letter advances by 2, second by 3." };
+}
+
+function letterNumberPosition(): RawPattern {
+  // A1, C3, E5, G7, I9, ? -> K11
+  const s = rand(0, 4);
+  const arr = Array.from({ length: 5 }, (_, i) => `${L(s + i * 2)}${s + i * 2 + 1}`);
+  const ans = `${L(s + 10)}${s + 11}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Letter = position", hint: "The number equals the letter's alphabet position." };
+}
+
+function fourLetterShift(): RawPattern {
+  // ABCD, BCDE, CDEF, DEFG, ? -> EFGH
+  const s = rand(0, 18);
+  const arr = Array.from({ length: 4 }, (_, i) =>
+    `${L(s + i)}${L(s + i + 1)}${L(s + i + 2)}${L(s + i + 3)}`,
+  );
+  const ans = `${L(s + 4)}${L(s + 5)}${L(s + 6)}${L(s + 7)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Sliding window of 4", hint: "Each group shifts forward by one letter." };
+}
+
+function vowelSkip(): RawPattern {
+  // B, D, F, H, J, ? -> L  (consonants only, every other one)
+  const start = rand(0, 6);
+  const arr = Array.from({ length: 5 }, (_, i) => L(1 + start + i * 2));
+  const ans = L(1 + start + 10);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Every other letter", hint: "Skip one letter each step." };
+}
+
+function letterMinusTwoPlusThree(): RawPattern {
+  // C, B, D, C, E, D, F, ? -> E   (-1, +2, -1, +2 ...)
+  const s = rand(3, 18);
+  const arr: string[] = [L(s)];
+  let p = s;
+  const seq = [-1, 2, -1, 2, -1, 2];
+  for (let i = 0; i < 6; i++) { p += seq[i]; arr.push(L(p)); }
+  const ans = L(p - 1);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Zig-zag letters", hint: "Pattern alternates minus one and plus two." };
+}
+
+function pairFirstFixedSecondShift(): RawPattern {
+  // AZ, AY, AX, AW, AV, ? -> AU
+  const first = rand(0, 25);
+  const start = rand(15, 25);
+  const arr = Array.from({ length: 5 }, (_, i) => `${L(first)}${L(start - i)}`);
+  const ans = `${L(first)}${L(start - 5)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Fixed + shifting", hint: "First letter is constant; second moves back one." };
+}
+
+registry.push(
+  { fn: consecutiveLetters, difficulty: "Easy" },
+  { fn: vowelSkip, difficulty: "Easy" },
+  { fn: letterNumberPosition, difficulty: "Easy" },
+  { fn: pairFirstFixedSecondShift, difficulty: "Easy" },
+  { fn: fourLetterShift, difficulty: "Easy" },
+  { fn: letterPairsSkipOne, difficulty: "Medium" },
+  { fn: mirrorLetterPairs, difficulty: "Medium" },
+  { fn: letterTriplets, difficulty: "Medium" },
+  { fn: tripleShiftEach, difficulty: "Medium" },
+  { fn: reverseTriplets, difficulty: "Medium" },
+  { fn: alphaPalindrome, difficulty: "Medium" },
+  { fn: letterGapIncreasing, difficulty: "Hard" },
+  { fn: letterReverseGapIncreasing, difficulty: "Hard" },
+  { fn: dualStepLetters, difficulty: "Hard" },
+  { fn: letterMinusTwoPlusThree, difficulty: "Hard" },
+);
+
 export function newPattern(lastName?: string): Pattern {
   return newPatternFiltered(undefined, lastName);
 }
