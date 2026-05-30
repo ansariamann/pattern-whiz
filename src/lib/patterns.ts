@@ -1765,20 +1765,6 @@ registry.push(
 
 // ===== Additional series (mixed) =====
 
-function evenNumbers(): RawPattern {
-  const s = rand(1, 10) * 2;
-  const arr = Array.from({ length: 5 }, (_, i) => String(s + i * 2));
-  const ans = String(s + 10);
-  return { series: arr, answer: ans, acceptable: [ans], name: "Even numbers", hint: "Add 2 each step." };
-}
-
-function oddNumbers(): RawPattern {
-  const s = rand(1, 10) * 2 + 1;
-  const arr = Array.from({ length: 5 }, (_, i) => String(s + i * 2));
-  const ans = String(s + 10);
-  return { series: arr, answer: ans, acceptable: [ans], name: "Odd numbers", hint: "Add 2 each step." };
-}
-
 function multiplesOfN(): RawPattern {
   const n = rand(3, 9);
   const arr = Array.from({ length: 5 }, (_, i) => String(n * (i + 1)));
@@ -1928,8 +1914,6 @@ function romanNumerals(): RawPattern {
 }
 
 registry.push(
-  { fn: evenNumbers, difficulty: "Easy" },
-  { fn: oddNumbers, difficulty: "Easy" },
   { fn: multiplesOfN, difficulty: "Easy" },
   { fn: countdownByN, difficulty: "Easy" },
   { fn: reverseAlphabet, difficulty: "Easy" },
