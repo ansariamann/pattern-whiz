@@ -1763,6 +1763,179 @@ registry.push(
   { fn: letterMinusTwoPlusThree, difficulty: "Hard" },
 );
 
+// ===== Additional series (mixed) =====
+
+function multiplesOfN(): RawPattern {
+  const n = rand(3, 9);
+  const arr = Array.from({ length: 5 }, (_, i) => String(n * (i + 1)));
+  const ans = String(n * 6);
+  return { series: arr, answer: ans, acceptable: [ans], name: `Multiples of ${n}`, hint: `Each term is a multiple of ${n}.` };
+}
+
+function countdownByN(): RawPattern {
+  const step = rand(2, 7);
+  const s = rand(40, 80);
+  const arr = Array.from({ length: 5 }, (_, i) => String(s - i * step));
+  const ans = String(s - 5 * step);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Countdown", hint: `Subtract ${step} each step.` };
+}
+
+function plusOneTwoThree(): RawPattern {
+  // 5, 6, 8, 11, 15, ? -> 20 (gaps +1,+2,+3,+4,+5)
+  const s = rand(1, 10);
+  const arr: number[] = [s];
+  for (let i = 1; i <= 4; i++) arr.push(arr[i - 1] + i);
+  const ans = String(arr[4] + 5);
+  return { series: arr.map(String), answer: ans, acceptable: [ans], name: "Growing gaps", hint: "Difference grows by 1 each time." };
+}
+
+function doubleMinusOne(): RawPattern {
+  // 2, 3, 5, 9, 17, ? -> 33  (×2 -1)
+  const s = rand(2, 5);
+  const arr: number[] = [s];
+  for (let i = 0; i < 4; i++) arr.push(arr[i] * 2 - 1);
+  const ans = String(arr[4] * 2 - 1);
+  return { series: arr.map(String), answer: ans, acceptable: [ans], name: "Double minus one", hint: "Multiply by 2, then subtract 1." };
+}
+
+function halvingSeries(): RawPattern {
+  // 128, 64, 32, 16, 8, ? -> 4
+  const exp = rand(6, 9);
+  const arr = Array.from({ length: 5 }, (_, i) => String(2 ** (exp - i)));
+  const ans = String(2 ** (exp - 5));
+  return { series: arr, answer: ans, acceptable: [ans], name: "Halving", hint: "Each term is half the previous." };
+}
+
+function plusPrimes(): RawPattern {
+  // 1, 3, 6, 11, 18, ? -> 29 (gaps 2,3,5,7,11)
+  const primes = [2, 3, 5, 7, 11, 13];
+  const s = rand(1, 9);
+  const arr: number[] = [s];
+  for (let i = 0; i < 4; i++) arr.push(arr[i] + primes[i]);
+  const ans = String(arr[4] + primes[4]);
+  return { series: arr.map(String), answer: ans, acceptable: [ans], name: "Add primes", hint: "Add the next prime each step." };
+}
+
+function cubesSeries(): RawPattern {
+  const s = rand(1, 4);
+  const arr = Array.from({ length: 4 }, (_, i) => String((s + i) ** 3));
+  const ans = String((s + 4) ** 3);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Cubes", hint: "Each term is n³." };
+}
+
+function nSquaredPlusOne(): RawPattern {
+  // 2, 5, 10, 17, 26, ? -> 37
+  const s = rand(1, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => String((s + i) ** 2 + 1));
+  const ans = String((s + 5) ** 2 + 1);
+  return { series: arr, answer: ans, acceptable: [ans], name: "n² + 1", hint: "Square the index and add one." };
+}
+
+function factorialSeries(): RawPattern {
+  // 1, 2, 6, 24, 120, ? -> 720
+  const arr = ["1", "2", "6", "24", "120"];
+  return { series: arr, answer: "720", acceptable: ["720"], name: "Factorials", hint: "Each term multiplies by the next integer." };
+}
+
+function alternateAddSub(): RawPattern {
+  // 10, 15, 13, 18, 16, ? -> 21 (+5,-2,+5,-2,+5)
+  const s = rand(5, 20);
+  const a = rand(3, 7), b = rand(1, 3);
+  const arr: number[] = [s];
+  for (let i = 0; i < 4; i++) arr.push(arr[i] + (i % 2 === 0 ? a : -b));
+  const ans = String(arr[4] + a);
+  return { series: arr.map(String), answer: ans, acceptable: [ans], name: "Alternating ±", hint: "Add, then subtract, repeating." };
+}
+
+function twoSeriesInterleaved(): RawPattern {
+  // 2, 10, 4, 20, 6, 30, ? -> 8 (evens & multiples of 10)
+  const arr = ["2", "10", "4", "20", "6", "30"];
+  return { series: arr, answer: "8", acceptable: ["8"], name: "Two interleaved series", hint: "Odd positions: even numbers. Even positions: multiples of 10." };
+}
+
+function reverseAlphabet(): RawPattern {
+  // Z, Y, X, W, V, ? -> U
+  const s = rand(10, 25);
+  const arr = Array.from({ length: 5 }, (_, i) => L(s - i));
+  const ans = L(s - 5);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Reverse alphabet", hint: "Each letter is one before in the alphabet." };
+}
+
+function letterSkipTwo(): RawPattern {
+  // A, D, G, J, M, ? -> P
+  const s = rand(0, 10);
+  const arr = Array.from({ length: 5 }, (_, i) => L(s + i * 3));
+  const ans = L(s + 15);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Letters +3", hint: "Skip two letters each step." };
+}
+
+function vowelsOnly(): RawPattern {
+  // A, E, I, O, U, ? -> A
+  return { series: ["A", "E", "I", "O", "U"], answer: "A", acceptable: ["A"], name: "Vowel cycle", hint: "The vowels in order — then it wraps." };
+}
+
+function dayInitials(): RawPattern {
+  // M, T, W, T, F, ? -> S  (days of the week)
+  return { series: ["M", "T", "W", "T", "F"], answer: "S", acceptable: ["S"], name: "Days of the week", hint: "First letters of weekdays." };
+}
+
+function monthInitials(): RawPattern {
+  // J, F, M, A, M, J, ? -> J  (months)
+  return { series: ["J", "F", "M", "A", "M", "J"], answer: "J", acceptable: ["J"], name: "Months", hint: "First letter of each month." };
+}
+
+function planetInitials(): RawPattern {
+  // M, V, E, M, J, ? -> S  (Mercury, Venus, Earth, Mars, Jupiter, Saturn)
+  return { series: ["M", "V", "E", "M", "J"], answer: "S", acceptable: ["S"], name: "Planets", hint: "First letters of planets from the Sun outward." };
+}
+
+function letterAlternateShift(): RawPattern {
+  // A, B, D, E, G, H, J, ? -> K  (+1,+2,+1,+2 …)
+  const s = rand(0, 10);
+  const arr: string[] = [L(s)];
+  let p = s;
+  const steps = [1, 2, 1, 2, 1, 2];
+  for (let i = 0; i < 6; i++) { p += steps[i]; arr.push(L(p)); }
+  const ans = L(p + 1);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Letters +1, +2", hint: "Alternate skip one and skip two letters." };
+}
+
+function letterNumberSquare(): RawPattern {
+  // A1, B4, C9, D16, E25, ? -> F36
+  const s = rand(0, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => `${L(s + i)}${(i + 1) ** 2}`);
+  const ans = `${L(s + 5)}${36}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Letter + square", hint: "Letters advance; numbers are 1², 2², 3²…" };
+}
+
+function romanNumerals(): RawPattern {
+  // I, II, III, IV, V, ? -> VI
+  return { series: ["I", "II", "III", "IV", "V"], answer: "VI", acceptable: ["VI", "vi"], name: "Roman numerals", hint: "Count up in Roman numerals." };
+}
+
+registry.push(
+  { fn: multiplesOfN, difficulty: "Easy" },
+  { fn: countdownByN, difficulty: "Easy" },
+  { fn: reverseAlphabet, difficulty: "Easy" },
+  { fn: letterSkipTwo, difficulty: "Easy" },
+  { fn: vowelsOnly, difficulty: "Easy" },
+  { fn: dayInitials, difficulty: "Easy" },
+  { fn: monthInitials, difficulty: "Easy" },
+  { fn: romanNumerals, difficulty: "Easy" },
+  { fn: plusOneTwoThree, difficulty: "Medium" },
+  { fn: halvingSeries, difficulty: "Medium" },
+  { fn: alternateAddSub, difficulty: "Medium" },
+  { fn: twoSeriesInterleaved, difficulty: "Medium" },
+  { fn: letterAlternateShift, difficulty: "Medium" },
+  { fn: letterNumberSquare, difficulty: "Medium" },
+  { fn: cubesSeries, difficulty: "Medium" },
+  { fn: nSquaredPlusOne, difficulty: "Medium" },
+  { fn: doubleMinusOne, difficulty: "Hard" },
+  { fn: plusPrimes, difficulty: "Hard" },
+  { fn: factorialSeries, difficulty: "Hard" },
+  { fn: planetInitials, difficulty: "Hard" },
+);
+
 export function newPattern(lastName?: string): Pattern {
   return newPatternFiltered(undefined, lastName);
 }
