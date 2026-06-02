@@ -1913,6 +1913,152 @@ function romanNumerals(): RawPattern {
   return { series: ["I", "II", "III", "IV", "V"], answer: "VI", acceptable: ["VI", "vi"], name: "Roman numerals", hint: "Count up in Roman numerals." };
 }
 
+function doubleLetters(): RawPattern {
+  const s = rand(0, 20);
+  const arr = Array.from({ length: 5 }, (_, i) => `${L(s + i)}${L(s + i)}`);
+  const ans = `${L(s + 5)}${L(s + 5)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Double letters", hint: "Each term is the same letter repeated twice." };
+}
+
+function letterSkipAlternate(): RawPattern {
+  const s = rand(0, 10);
+  const arr: string[] = [L(s)];
+  let p = s;
+  const steps = [2, 1, 2, 1, 2, 1];
+  for (let i = 0; i < 6; i++) { p += steps[i]; arr.push(L(p)); }
+  const ans = L(p + 2);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Letters +2, +1", hint: "Alternate between skipping 2 and skipping 1." };
+}
+
+function letterPrimePosition(): RawPattern {
+  const primes = [2, 3, 5, 7, 11, 13, 17];
+  const s = rand(0, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => `${L(s + i)}${primes[i]}`);
+  const ans = `${L(s + 5)}${primes[5]}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Letter + prime position", hint: "The number is the next prime number." };
+}
+
+function firstSecondHalf(): RawPattern {
+  const s = rand(0, 10);
+  const arr = Array.from({ length: 5 }, (_, i) => `${L(s + i)}${L(12 + s + i)}`);
+  const ans = `${L(s + 5)}${L(12 + s + 5)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "First + second half", hint: "First letter from A-M, second from N-Z — both step forward." };
+}
+
+function letterFibonacciGap(): RawPattern {
+  const s = rand(0, 6);
+  const arr: string[] = [L(s)];
+  let p = s;
+  const gaps = [1, 1, 2, 3, 5];
+  for (let i = 0; i < 5; i++) { p += gaps[i]; arr.push(L(p)); }
+  const ans = L(p + 8);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Fibonacci-gap letters", hint: "Gaps between letters follow Fibonacci: 1, 1, 2, 3, 5..." };
+}
+
+function letterTwoBackOne(): RawPattern {
+  const s = rand(15, 25);
+  const arr: string[] = [L(s)];
+  let p = s;
+  const steps = [-2, -1, -2, -1, -2, -1];
+  for (let i = 0; i < 6; i++) { p += steps[i]; arr.push(L(p)); }
+  const ans = L(p - 2);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Letters −2, −1", hint: "Alternate between going back 2 and back 1." };
+}
+
+function letterPositionEven(): RawPattern {
+  const s = rand(0, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => `${L(s + i * 2 + 1)}${(i + 1) * 2}`);
+  const ans = `${L(s + 11)}${12}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Even-position letters", hint: "Letters are at even positions; numbers are 2, 4, 6..." };
+}
+
+function reverseAlphabetPairs(): RawPattern {
+  const s = rand(0, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => `${L(25 - s - i * 2)}${L(24 - s - i * 2)}`);
+  const ans = `${L(25 - s - 10)}${L(24 - s - 10)}`;
+  return { series: arr, answer: ans, acceptable: [ans], name: "Reverse letter pairs", hint: "Pairs going backward through the alphabet." };
+}
+
+function letterGapDouble(): RawPattern {
+  const s = rand(0, 8);
+  const arr: string[] = [L(s)];
+  let p = s;
+  let gap = 2;
+  for (let i = 0; i < 4; i++) { p += gap; arr.push(L(p)); gap *= 2; }
+  const ans = L(p + gap);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Doubling letter gaps", hint: "Gap doubles each step: +2, +4, +8, +16..." };
+}
+
+function vowelPosition(): RawPattern {
+  const vowels = "AEIOU";
+  const s = rand(0, 2);
+  const arr = Array.from({ length: 5 }, (_, i) => vowels[(s + i) % 5]);
+  const ans = String(vowels[(s + 5) % 5]);
+  return { series: arr, answer: ans, acceptable: [ans, ans.toLowerCase()], name: "Vowel position shift", hint: "Vowels in order, shifted by a starting point." };
+}
+
+function addFive(): RawPattern {
+  const s = rand(1, 20);
+  const arr = Array.from({ length: 5 }, (_, i) => String(s + i * 5));
+  const ans = String(s + 25);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Add 5", hint: "Increases by 5 each step." };
+}
+
+function tensSeries(): RawPattern {
+  const s = rand(1, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => String((s + i) * 10));
+  const ans = String((s + 5) * 10);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Tens", hint: "Multiples of 10." };
+}
+
+function doublePlusOne(): RawPattern {
+  const arr = [1, 3, 7, 15, 31];
+  return { series: arr.map(String), answer: "63", acceptable: ["63"], name: "Double + 1 (2ⁿ−1)", hint: "Each term = previous × 2 + 1." };
+}
+
+function addTen(): RawPattern {
+  const s = rand(1, 15);
+  const arr = Array.from({ length: 5 }, (_, i) => String(s + i * 10));
+  const ans = String(s + 50);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Add 10", hint: "Increases by 10 each step." };
+}
+
+function simpleCounting(): RawPattern {
+  const s = rand(1, 10);
+  const arr = Array.from({ length: 5 }, (_, i) => String(s + i));
+  const ans = String(s + 5);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Simple counting", hint: "Just count up by 1." };
+}
+
+function repeatingDigit(): RawPattern {
+  const d = rand(1, 9);
+  const arr = Array.from({ length: 5 }, (_, i) => String(d).repeat(i + 1));
+  const ans = String(d).repeat(6);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Repeating digit", hint: "Same digit repeated 1, 2, 3, 4, 5... times." };
+}
+
+function hundredSeries(): RawPattern {
+  const s = rand(1, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => String((s + i) * 100));
+  const ans = String((s + 5) * 100);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Hundreds", hint: "Multiples of 100." };
+}
+
+function squareOfEven(): RawPattern {
+  const s = rand(1, 3);
+  const arr = Array.from({ length: 5 }, (_, i) => String(((s + i) * 2) ** 2));
+  const ans = String(((s + 5) * 2) ** 2);
+  return { series: arr, answer: ans, acceptable: [ans], name: "Squares of even numbers", hint: "Square of 2, 4, 6, 8..." };
+}
+
+function multiplyByTen(): RawPattern {
+  const s = rand(2, 5);
+  const arr: number[] = [s];
+  for (let i = 0; i < 4; i++) arr.push(arr[i] * 10);
+  const ans = String(arr[arr.length - 1] * 10);
+  return { series: arr.map(String), answer: ans, acceptable: [ans], name: "× 10", hint: "Multiply by 10 each step." };
+}
+
 registry.push(
   { fn: multiplesOfN, difficulty: "Easy" },
   { fn: countdownByN, difficulty: "Easy" },
@@ -1922,6 +2068,16 @@ registry.push(
   { fn: dayInitials, difficulty: "Easy" },
   { fn: monthInitials, difficulty: "Easy" },
   { fn: romanNumerals, difficulty: "Easy" },
+  { fn: doubleLetters, difficulty: "Easy" },
+  { fn: vowelPosition, difficulty: "Easy" },
+  { fn: reverseAlphabetPairs, difficulty: "Easy" },
+  { fn: letterPositionEven, difficulty: "Easy" },
+  { fn: addFive, difficulty: "Easy" },
+  { fn: tensSeries, difficulty: "Easy" },
+  { fn: addTen, difficulty: "Easy" },
+  { fn: simpleCounting, difficulty: "Easy" },
+  { fn: repeatingDigit, difficulty: "Easy" },
+  { fn: hundredSeries, difficulty: "Easy" },
   { fn: plusOneTwoThree, difficulty: "Medium" },
   { fn: halvingSeries, difficulty: "Medium" },
   { fn: alternateAddSub, difficulty: "Medium" },
@@ -1930,10 +2086,19 @@ registry.push(
   { fn: letterNumberSquare, difficulty: "Medium" },
   { fn: cubesSeries, difficulty: "Medium" },
   { fn: nSquaredPlusOne, difficulty: "Medium" },
+  { fn: letterSkipAlternate, difficulty: "Medium" },
+  { fn: firstSecondHalf, difficulty: "Medium" },
+  { fn: letterPrimePosition, difficulty: "Medium" },
   { fn: doubleMinusOne, difficulty: "Hard" },
   { fn: plusPrimes, difficulty: "Hard" },
   { fn: factorialSeries, difficulty: "Hard" },
   { fn: planetInitials, difficulty: "Hard" },
+  { fn: letterFibonacciGap, difficulty: "Hard" },
+  { fn: letterTwoBackOne, difficulty: "Hard" },
+  { fn: letterGapDouble, difficulty: "Hard" },
+  { fn: doublePlusOne, difficulty: "Hard" },
+  { fn: squareOfEven, difficulty: "Hard" },
+  { fn: multiplyByTen, difficulty: "Hard" },
 );
 
 export function newPattern(lastName?: string): Pattern {
