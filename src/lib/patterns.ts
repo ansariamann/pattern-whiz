@@ -2129,3 +2129,82 @@ export function checkAnswer(pattern: Pattern, input: string): boolean {
   const n = norm(input);
   return pattern.acceptable.some((a) => norm(a) === n);
 }
+
+// ---------- Letter-series helpers (for Daily Challenge) ----------
+
+const LETTER_SERIES_FNS: Array<() => RawPattern> = [
+  alphabet,
+  alphabetReverse,
+  letterSkipCycle,
+  letterReverseSkip,
+  consecutiveLetters,
+  vowelSkip,
+  pairFirstFixedSecondShift,
+  fourLetterShift,
+  letterPairsSkipOne,
+  mirrorLetterPairs,
+  letterTriplets,
+  tripleShiftEach,
+  reverseTriplets,
+  alphaPalindrome,
+  letterGapIncreasing,
+  letterReverseGapIncreasing,
+  dualStepLetters,
+  letterMinusTwoPlusThree,
+  reverseAlphabet,
+  letterSkipTwo,
+  vowelsOnly,
+  doubleLetters,
+  vowelPosition,
+  reverseAlphabetPairs,
+  letterAlternateShift,
+  letterSkipAlternate,
+  firstSecondHalf,
+  letterFibonacciGap,
+  letterTwoBackOne,
+  letterGapDouble,
+  alphaSkipTwo,
+  alphabetPairs,
+  alphabetReverseSimple,
+  consonantCycle,
+  vowelCycle,
+  dayInitials,
+  monthInitials,
+  romanNumerals,
+  planetInitials,
+];
+
+function difficultyForLetterFn(fn: () => RawPattern): Difficulty {
+  const entry = registry.find((e) => e.fn === fn);
+  return entry?.difficulty ?? "Medium";
+}
+
+export function dailyDateKey(d: Date = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function hashSeed(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h >>> 0;
+}
+
+/**
+ * Returns a letter-series pattern for the given day. The choice of generator
+ * is deterministic per date (same generator family all day). The specific
+ * series produced by that generator may still vary per call because the
+ * underlying generators use Math.random, so callers should cache the result
+ * for the day.
+ */
+export function getDailyLetterPattern(date: Date = new Date()): Pattern {
+  const seed = hashSeed(dailyDateKey(date));
+  const fn = LETTER_SERIES_FNS[seed % LETTER_SERIES_FNS.length];
+  const p = fn();
+  return { ...p, difficulty: difficultyForLetterFn(fn) };
+}
