@@ -12,8 +12,15 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Heart, Lightbulb, RotateCcw, Sparkles, Trophy, Zap, Flame, GraduationCap, Shuffle, ArrowRight } from "lucide-react";
-import { newPatternFiltered, checkAnswer, type Pattern, type Difficulty } from "@/lib/patterns";
+import { CalendarDays, Check, Heart, Lightbulb, RotateCcw, Sparkles, Trophy, Zap, Flame, GraduationCap, Shuffle, ArrowRight } from "lucide-react";
+import {
+  newPatternFiltered,
+  checkAnswer,
+  getDailyLetterPattern,
+  dailyDateKey,
+  type Pattern,
+  type Difficulty,
+} from "@/lib/patterns";
 
 type DiffFilter = Difficulty | "All";
 
@@ -30,6 +37,55 @@ const DIFF_META: Record<
 const LEVEL_STEP = 100;
 const MAX_LIVES = 5;
 const STORAGE_KEY = "pattern-whiz:v1";
+const DAILY_STORAGE_KEY = "pattern-whiz:daily:v1";
+
+type DailyState = {
+  date: string;
+  pattern: Pattern;
+  attempted: boolean;
+  success: boolean;
+};
+
+type DailyPersisted = {
+  streak: number;
+  lastCompletedDate: string | null;
+  today: DailyState | null;
+};
+
+const loadDaily = (): DailyPersisted => {
+  if (typeof window === "undefined") {
+    return { streak: 0, lastCompletedDate: null, today: null };
+  }
+  try {
+    const raw = window.localStorage.getItem(DAILY_STORAGE_KEY);
+    if (!raw) return { streak: 0, lastCompletedDate: null, today: null };
+    const parsed = JSON.parse(raw) as DailyPersisted;
+    return {
+      streak: typeof parsed.streak === "number" ? parsed.streak : 0,
+      lastCompletedDate: parsed.lastCompletedDate ?? null,
+      today: parsed.today ?? null,
+    };
+  } catch {
+    return { streak: 0, lastCompletedDate: null, today: null };
+  }
+};
+
+const saveDaily = (data: DailyPersisted) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(DAILY_STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    /* ignore */
+  }
+};
+
+const isYesterday = (prev: string | null, today: string): boolean => {
+  if (!prev) return false;
+  const p = new Date(prev + "T00:00:00");
+  const t = new Date(today + "T00:00:00");
+  const diff = Math.round((t.getTime() - p.getTime()) / 86400000);
+  return diff === 1;
+};
 
 type PersistedState = {
   best: number;
@@ -91,6 +147,15 @@ function Index() {
   const [over, setOver] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
 
+  // Daily challenge state
+  const [dailyOpen, setDailyOpen] = useState(false);
+  const [dailyHydrated, setDailyHydrated] = useState(false);
+  const [dailyStreak, setDailyStreak] = useState(0);
+  const [dailyLastDate, setDailyLastDate] = useState<string | null>(null);
+  const [dailyToday, setDailyToday] = useState<DailyState | null>(null);
+  const [dailyInput, setDailyInput] = useState("");
+  const [dailyHintUsed, setDailyHintUsed] = useState(false);
+
   const diff = DIFF_META[pattern.difficulty];
   const level = Math.floor(exp / LEVEL_STEP) + 1;
   const intoLevel = exp % LEVEL_STEP;
@@ -126,6 +191,89 @@ function Index() {
     const t = setTimeout(() => setFlash("none"), 500);
     return () => clearTimeout(t);
   }, [flash]);
+
+  // Hydrate daily challenge once, rolling forward to today's puzzle
+  useEffect(() => {
+    const stored = loadDaily();
+    const todayKey = dailyDateKey();
+    let today = stored.today;
+    if (!today || today.date !== todayKey) {
+      today = {
+        date: todayKey,
+        pattern: getDailyLetterPattern(),
+        attempted: false,
+        success: false,
+      };
+    }
+    let streak = stored.streak;
+    // If user broke the chain (didn't complete yesterday and not today), reset to 0
+    if (
+      stored.lastCompletedDate &&
+      stored.lastCompletedDate !== todayKey &&
+      !isYesterday(stored.lastCompletedDate, todayKey)
+    ) {
+      streak = 0;
+    }
+    setDailyStreak(streak);
+    setDailyLastDate(stored.lastCompletedDate);
+    setDailyToday(today);
+    setDailyHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!dailyHydrated) return;
+    saveDaily({
+      streak: dailyStreak,
+      lastCompletedDate: dailyLastDate,
+      today: dailyToday,
+    });
+  }, [dailyHydrated, dailyStreak, dailyLastDate, dailyToday]);
+
+  const dailyDone = !!dailyToday?.success;
+  const dailyAttempted = !!dailyToday?.attempted;
+
+  const submitDaily = () => {
+    if (!dailyToday || dailyAttempted || !dailyInput.trim()) return;
+    const correct = checkAnswer(dailyToday.pattern, dailyInput);
+    const updated: DailyState = {
+      ...dailyToday,
+      attempted: true,
+      success: correct,
+    };
+    setDailyToday(updated);
+    if (correct) {
+      const todayKey = updated.date;
+      const nextStreak = isYesterday(dailyLastDate, todayKey)
+        ? dailyStreak + 1
+        : dailyLastDate === todayKey
+          ? dailyStreak
+          : 1;
+      setDailyStreak(nextStreak);
+      setDailyLastDate(todayKey);
+      toast.success("Daily challenge solved!", {
+        description: `Streak: ${nextStreak} day${nextStreak === 1 ? "" : "s"}`,
+      });
+    } else {
+      toast("Not today — try again tomorrow", {
+        description: `Answer: ${dailyToday.pattern.answer}`,
+        icon: "💡",
+      });
+    }
+  };
+
+  const useDailyHint = () => {
+    if (!dailyToday || dailyHintUsed || dailyAttempted) return;
+    setDailyHintUsed(true);
+    toast(dailyToday.pattern.hint, { icon: "💡" });
+  };
+
+  // Reset hint state whenever the dialog opens or the day rolls
+  useEffect(() => {
+    if (dailyOpen) {
+      setDailyInput("");
+      setDailyHintUsed(false);
+    }
+  }, [dailyOpen, dailyToday?.date]);
 
   const nextRound = (resetAll = false) => {
     setPattern((p) => newPatternFiltered(filter, p.name));
@@ -245,6 +393,43 @@ function Index() {
           </div>
           <Scoreboard exp={exp} streak={streak} lives={lives} lastGain={lastGain} level={level} intoLevel={intoLevel} />
         </header>
+
+        <button
+          type="button"
+          onClick={() => setDailyOpen(true)}
+          className="mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-amber-400/40 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 p-3 text-left shadow-sm transition-all hover:border-amber-400/70 hover:shadow-md"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-rose-500 text-white shadow">
+              <CalendarDays className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 text-sm font-bold">
+                Daily Challenge
+                {dailyDone && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+                    <Check className="h-3 w-3" /> Done
+                  </span>
+                )}
+                {dailyAttempted && !dailyDone && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-600">
+                    Missed
+                  </span>
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                One letter-series puzzle, every day.
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full border border-orange-400/40 bg-orange-500/10 px-3 py-1 text-sm font-bold text-orange-600">
+            <Flame className="h-4 w-4" />
+            <span className="tabular-nums">{dailyStreak}</span>
+            <span className="text-[10px] uppercase tracking-wider opacity-80">
+              streak
+            </span>
+          </div>
+        </button>
 
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -423,6 +608,124 @@ function Index() {
               Play again
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={dailyOpen} onOpenChange={setDailyOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-amber-500" />
+              Daily Challenge
+            </DialogTitle>
+            <DialogDescription>
+              {dailyToday ? (
+                <>
+                  {new Date(dailyToday.date + "T00:00:00").toLocaleDateString(
+                    undefined,
+                    { weekday: "long", month: "long", day: "numeric" },
+                  )}
+                  {" · "}
+                  <span className="inline-flex items-center gap-1 font-semibold text-orange-600">
+                    <Flame className="h-3.5 w-3.5" /> {dailyStreak}-day streak
+                  </span>
+                </>
+              ) : (
+                "Loading…"
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {dailyToday && (
+            <div className="space-y-4">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                {dailyToday.pattern.name}
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {[
+                  ...dailyToday.pattern.series,
+                  dailyAttempted ? dailyToday.pattern.answer : "?",
+                ].map((item, i, arr) => {
+                  const isLast = i === arr.length - 1;
+                  return (
+                    <div
+                      key={`${i}-${item}`}
+                      className={`flex h-12 min-w-12 items-center justify-center rounded-xl border px-2.5 text-lg font-bold tabular-nums shadow-sm sm:h-14 sm:min-w-14 sm:text-xl ${
+                        isLast
+                          ? dailyAttempted
+                            ? dailyDone
+                              ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-600"
+                              : "border-rose-500/40 bg-rose-500/15 text-rose-600"
+                            : "animate-pulse border-dashed border-amber-500/60 bg-gradient-to-br from-amber-400 to-rose-500 text-white"
+                          : "border-border bg-secondary/60 text-secondary-foreground"
+                      }`}
+                    >
+                      {item}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {!dailyAttempted ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    submitDaily();
+                  }}
+                  className="flex flex-col gap-3 sm:flex-row"
+                >
+                  <Input
+                    autoFocus
+                    value={dailyInput}
+                    onChange={(e) => setDailyInput(e.target.value)}
+                    placeholder="Your answer…"
+                    className="h-11"
+                  />
+                  <Button type="submit" disabled={!dailyInput.trim()} className="h-11 px-5">
+                    Submit
+                  </Button>
+                </form>
+              ) : (
+                <div
+                  className={`rounded-xl border p-3 text-sm ${
+                    dailyDone
+                      ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400"
+                      : "border-rose-500/30 bg-rose-500/5 text-rose-700 dark:text-rose-400"
+                  }`}
+                >
+                  {dailyDone ? (
+                    <>Nice — see you tomorrow for the next one.</>
+                  ) : (
+                    <>
+                      Answer was{" "}
+                      <span className="font-semibold tabular-nums">
+                        {dailyToday.pattern.answer}
+                      </span>
+                      . The streak will pick up again when you solve tomorrow's.
+                    </>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={useDailyHint}
+                  disabled={dailyHintUsed || dailyAttempted}
+                >
+                  <Lightbulb className="mr-1.5 h-4 w-4" />
+                  {dailyHintUsed ? "Hint shown" : "Show hint"}
+                </Button>
+                <span>
+                  {dailyLastDate
+                    ? `Last solved: ${dailyLastDate}`
+                    : "Solve to start a streak"}
+                </span>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
