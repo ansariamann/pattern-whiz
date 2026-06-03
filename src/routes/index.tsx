@@ -39,9 +39,65 @@ const MAX_LIVES = 5;
 const STORAGE_KEY = "pattern-whiz:v1";
 const DAILY_STORAGE_KEY = "pattern-whiz:daily:v1";
 
+// Build 4 multiple-choice options including the correct answer.
+function buildChoices(pattern: Pattern, count = 4): string[] {
+  const answer = pattern.answer;
+  const set = new Set<string>([answer]);
+  const isNum = /^-?\d+(\.\d+)?$/.test(answer);
+  if (isNum) {
+    const n = Number(answer);
+    const deltas = [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 10, -10];
+    // shuffle deltas for variety
+    for (let i = deltas.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deltas[i], deltas[j]] = [deltas[j], deltas[i]];
+    }
+    for (const d of deltas) {
+      if (set.size >= count) break;
+      const v = String(n + d);
+      if (!pattern.acceptable.includes(v)) set.add(v);
+    }
+  } else {
+    const chars = answer.split("");
+    const shiftAt = (idx: number, delta: number) => {
+      const c = chars[idx];
+      const code = c.charCodeAt(0);
+      let nc = c;
+      if (/[A-Z]/.test(c)) nc = String.fromCharCode(((code - 65 + delta + 26) % 26) + 65);
+      else if (/[a-z]/.test(c)) nc = String.fromCharCode(((code - 97 + delta + 26) % 26) + 97);
+      else if (/\d/.test(c)) nc = String((Number(c) + delta + 10) % 10);
+      const next = [...chars];
+      next[idx] = nc;
+      return next.join("");
+    };
+    const order: [number, number][] = [];
+    for (const d of [1, -1, 2, -2, 3, -3]) {
+      for (let i = chars.length - 1; i >= 0; i--) order.push([i, d]);
+    }
+    for (const [i, d] of order) {
+      if (set.size >= count) break;
+      const v = shiftAt(i, d);
+      if (v !== answer && !pattern.acceptable.includes(v)) set.add(v);
+    }
+    // last-resort filler
+    let fill = 0;
+    while (set.size < count && fill < 50) {
+      set.add(answer + String.fromCharCode(65 + (fill % 26)));
+      fill++;
+    }
+  }
+  const arr = Array.from(set);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, count);
+}
+
 type DailyState = {
   date: string;
   pattern: Pattern;
+  choices: string[];
   attempted: boolean;
   success: boolean;
 };
@@ -93,6 +149,16 @@ type PersistedState = {
   highLevel: number;
   totalSolved: number;
   filter: DiffFilter;
+  // Live game state so refresh doesn't reset progress
+  exp: number;
+  solved: number;
+  streak: number;
+  lives: number;
+  pattern: Pattern | null;
+  choices: string[];
+  revealed: boolean;
+  hintUsed: boolean;
+  lastGain: number;
 };
 
 const loadPersisted = (): Partial<PersistedState> => {
