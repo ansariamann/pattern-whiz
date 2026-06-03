@@ -762,24 +762,18 @@ function Index() {
               </div>
 
               {!dailyAttempted ? (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    submitDaily();
-                  }}
-                  className="flex flex-col gap-3 sm:flex-row"
-                >
-                  <Input
-                    autoFocus
-                    value={dailyInput}
-                    onChange={(e) => setDailyInput(e.target.value)}
-                    placeholder="Your answer…"
-                    className="h-11"
-                  />
-                  <Button type="submit" disabled={!dailyInput.trim()} className="h-11 px-5">
-                    Submit
-                  </Button>
-                </form>
+                <div className="grid grid-cols-2 gap-2">
+                  {dailyToday.choices.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => submitDaily(c)}
+                      className="h-11 rounded-xl border border-border bg-card text-base font-bold tabular-nums shadow-sm transition-all hover:border-primary/60 hover:bg-primary/5 active:scale-[0.98]"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
               ) : (
                 <div
                   className={`rounded-xl border p-3 text-sm ${
