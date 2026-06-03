@@ -326,9 +326,10 @@ function Index() {
   const dailyDone = !!dailyToday?.success;
   const dailyAttempted = !!dailyToday?.attempted;
 
-  const submitDaily = () => {
-    if (!dailyToday || dailyAttempted || !dailyInput.trim()) return;
-    const correct = checkAnswer(dailyToday.pattern, dailyInput);
+  const submitDaily = (choice: string) => {
+    if (!dailyToday || dailyAttempted || !choice) return;
+    setDailyPicked(choice);
+    const correct = checkAnswer(dailyToday.pattern, choice);
     const updated: DailyState = {
       ...dailyToday,
       attempted: true,
@@ -364,14 +365,18 @@ function Index() {
   // Reset hint state whenever the dialog opens or the day rolls
   useEffect(() => {
     if (dailyOpen) {
-      setDailyInput("");
+      setDailyPicked(null);
       setDailyHintUsed(false);
     }
   }, [dailyOpen, dailyToday?.date]);
 
   const nextRound = (resetAll = false) => {
-    setPattern((p) => newPatternFiltered(filter, p.name));
-    setInput("");
+    setPattern((p) => {
+      const np = newPatternFiltered(filter, p.name);
+      setChoices(buildChoices(np));
+      return np;
+    });
+    setPicked(null);
     setRevealed(false);
     setHintUsed(false);
     if (resetAll) {
@@ -386,15 +391,20 @@ function Index() {
 
   const changeFilter = (f: DiffFilter) => {
     setFilter(f);
-    setPattern((p) => newPatternFiltered(f, p.name));
-    setInput("");
+    setPattern((p) => {
+      const np = newPatternFiltered(f, p.name);
+      setChoices(buildChoices(np));
+      return np;
+    });
+    setPicked(null);
     setRevealed(false);
     setHintUsed(false);
   };
 
-  const submit = () => {
-    if (!input.trim() || revealed) return;
-    if (checkAnswer(pattern, input)) {
+  const submit = (choice: string) => {
+    if (!choice || revealed) return;
+    setPicked(choice);
+    if (checkAnswer(pattern, choice)) {
       const newStreak = streak + 1;
       const base = DIFF_META[pattern.difficulty].xp;
       const bonus = Math.floor(newStreak / 3) * 5;
