@@ -460,7 +460,7 @@ function Index() {
   );
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-4 py-10">
+    <div className="relative min-h-screen overflow-hidden px-3 py-4 sm:px-4 sm:py-8">
       {/* Animated background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-background to-fuchsia-50 dark:from-indigo-950/40 dark:via-background dark:to-fuchsia-950/40" />
@@ -483,15 +483,12 @@ function Index() {
       </div>
 
       <div className="mx-auto max-w-3xl">
-        <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <header className="mb-3 flex flex-wrap items-center justify-between gap-3 sm:mb-5 sm:gap-4">
           <div>
-            <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-600">
-              <Sparkles className="h-3 w-3" /> Aptitude trainer
-            </div>
-            <h1 className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-3xl font-black tracking-tight text-transparent sm:text-4xl md:text-5xl">
+            <h1 className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-2xl font-black tracking-tight text-transparent sm:text-4xl md:text-5xl">
               Pattern Whiz
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="hidden text-sm text-muted-foreground sm:block">
               GATE-grade sequences. Solve → earn XP → level up.
             </p>
           </div>
@@ -501,11 +498,11 @@ function Index() {
         <button
           type="button"
           onClick={() => setDailyOpen(true)}
-          className="mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-amber-400/40 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 p-3 text-left shadow-sm transition-all hover:border-amber-400/70 hover:shadow-md"
+          className="mb-3 flex w-full items-center justify-between gap-3 rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 p-2 text-left shadow-sm transition-all hover:border-amber-400/70 hover:shadow-md sm:mb-4 sm:rounded-2xl sm:p-3"
         >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-rose-500 text-white shadow">
-              <CalendarDays className="h-5 w-5" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-rose-500 text-white shadow sm:h-10 sm:w-10 sm:rounded-xl">
+              <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 text-sm font-bold">
@@ -521,22 +518,19 @@ function Index() {
                   </span>
                 )}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="hidden text-xs text-muted-foreground sm:block">
                 One letter-series puzzle, every day.
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-orange-400/40 bg-orange-500/10 px-3 py-1 text-sm font-bold text-orange-600">
+          <div className="flex items-center gap-1 rounded-full border border-orange-400/40 bg-orange-500/10 px-2 py-0.5 text-xs font-bold text-orange-600 sm:gap-1.5 sm:px-3 sm:py-1 sm:text-sm">
             <Flame className="h-4 w-4" />
             <span className="tabular-nums">{dailyStreak}</span>
-            <span className="text-[10px] uppercase tracking-wider opacity-80">
-              streak
-            </span>
           </div>
         </button>
 
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <div className="mb-3 flex flex-wrap items-center gap-1.5 sm:mb-4 sm:gap-2">
+          <span className="hidden items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground sm:inline-flex">
             <Shuffle className="h-3 w-3" /> Difficulty
           </span>
           {(["All", "Easy", "Medium", "Hard", "GATE"] as DiffFilter[]).map((f) => {
@@ -547,7 +541,7 @@ function Index() {
                 key={f}
                 type="button"
                 onClick={() => changeFilter(f)}
-                className={`rounded-full border px-3 py-1 text-xs font-bold transition-all ${
+                className={`rounded-full border px-2.5 py-0.5 text-xs font-bold transition-all sm:px-3 sm:py-1 ${
                   active
                     ? meta
                       ? `bg-gradient-to-r ${meta.gradient} text-white border-transparent shadow-md`
@@ -569,28 +563,24 @@ function Index() {
               : { x: 0 }
           }
           transition={{ duration: 0.45 }}
-          className={`relative overflow-hidden rounded-3xl border bg-card/70 p-6 shadow-2xl backdrop-blur-xl transition-all md:p-10 ${flashClass}`}
+          className={`relative overflow-hidden rounded-2xl border bg-card/70 p-4 shadow-2xl backdrop-blur-xl transition-all sm:rounded-3xl sm:p-6 md:p-8 ${flashClass}`}
         >
           <div
             className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${diff.gradient}`}
           />
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-4">
             <span
               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${diff.chip}`}
             >
               <diff.icon className="h-3.5 w-3.5" />
               {diff.label}
             </span>
-            <div className="flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-              <span>Solved {solved}</span>
-              <span className="text-border">·</span>
-              <span className="inline-flex items-center gap-1">
-                <Flame className="h-3 w-3 text-orange-500" /> {streak}
-              </span>
+            <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+              Solved {solved}
             </div>
           </div>
 
-          <div className="mb-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3 md:gap-4">
+          <div className="mb-5 flex flex-wrap items-center justify-center gap-1.5 sm:mb-6 sm:gap-3 md:gap-4">
             <AnimatePresence mode="popLayout">
               {displaySeries.map((item, i) => {
                 const isLast = i === displaySeries.length - 1;
@@ -600,7 +590,7 @@ function Index() {
                     initial={{ opacity: 0, y: 12, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ delay: i * 0.06, type: "spring", stiffness: 260 }}
-                    className={`flex h-12 min-w-12 items-center justify-center rounded-xl border px-2.5 text-lg font-bold tabular-nums shadow-sm transition-all sm:h-16 sm:min-w-16 sm:rounded-2xl sm:px-4 sm:text-2xl md:h-20 md:min-w-20 md:text-3xl ${
+                    className={`flex h-10 min-w-10 items-center justify-center rounded-lg border px-2 text-base font-bold tabular-nums shadow-sm transition-all sm:h-14 sm:min-w-14 sm:rounded-xl sm:px-3 sm:text-2xl md:h-16 md:min-w-16 md:text-3xl ${
                       isLast
                         ? revealed
                           ? flash === "bad"
@@ -617,55 +607,56 @@ function Index() {
             </AnimatePresence>
           </div>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              submit();
-            }}
-            className="flex flex-col gap-3 sm:flex-row"
-          >
-            <Input
-              autoFocus
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Your answer…"
-              className="h-12 text-lg"
-              disabled={revealed}
-            />
-            <Button
-              type="submit"
-              className="h-12 px-6 text-base"
-              disabled={revealed || !input.trim()}
-            >
-              Submit
-            </Button>
-          </form>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            {choices.map((c) => {
+              const isPicked = picked === c;
+              const isCorrect = checkAnswer(pattern, c);
+              const stateClass = revealed
+                ? isCorrect
+                  ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                  : isPicked
+                    ? "border-rose-500/60 bg-rose-500/15 text-rose-700 dark:text-rose-400"
+                    : "border-border bg-card/40 text-muted-foreground opacity-60"
+                : "border-border bg-card hover:border-primary/60 hover:bg-primary/5 active:scale-[0.98]";
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => submit(c)}
+                  disabled={revealed}
+                  className={`h-12 rounded-xl border text-base font-bold tabular-nums shadow-sm transition-all sm:h-14 sm:text-lg ${stateClass}`}
+                >
+                  {c}
+                </button>
+              );
+            })}
+          </div>
 
           {revealed && flash === "bad" && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-4 flex flex-col gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="mt-3 flex flex-col gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="text-sm">
                 <div className="font-semibold text-rose-600">
                   Answer: <span className="tabular-nums">{pattern.answer}</span>
                 </div>
-                <div className="text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   {pattern.name} — {pattern.hint}
                 </div>
               </div>
               <Button
                 type="button"
                 onClick={() => nextRound()}
-                className="h-10 shrink-0"
+                className="h-9 shrink-0"
               >
                 Continue <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </motion.div>
           )}
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
             <Button
               type="button"
               variant="ghost"
@@ -689,7 +680,7 @@ function Index() {
           </div>
         </motion.div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
+        <p className="mt-3 text-center text-[11px] text-muted-foreground sm:mt-5 sm:text-xs">
           Best streak: {best} · Top level: {highLevel} ({highExp} XP) · Solved all-time: {totalSolved}
         </p>
       </div>
