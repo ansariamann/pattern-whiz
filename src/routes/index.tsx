@@ -195,8 +195,8 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [filter, setFilter] = useState<DiffFilter>("All");
-  const [pattern, setPattern] = useState<Pattern | null>(null);
-  const [choices, setChoices] = useState<string[]>([]);
+  const [pattern, setPattern] = useState<Pattern>(() => newPatternFiltered("All"));
+  const [choices, setChoices] = useState<string[]>(() => []);
   const [picked, setPicked] = useState<string | null>(null);
   const [exp, setExp] = useState(0);
   const [solved, setSolved] = useState(0);
@@ -222,7 +222,7 @@ function Index() {
   const [dailyPicked, setDailyPicked] = useState<string | null>(null);
   const [dailyHintUsed, setDailyHintUsed] = useState(false);
 
-  const diff = pattern ? DIFF_META[pattern.difficulty] : DIFF_META.Easy;
+  const diff = DIFF_META[pattern.difficulty];
   const level = Math.floor(exp / LEVEL_STEP) + 1;
   const intoLevel = exp % LEVEL_STEP;
   const highLevel = Math.floor(highExp / LEVEL_STEP) + 1;
@@ -457,7 +457,7 @@ function Index() {
         : `ring-1 ring-border`;
 
   const displaySeries = useMemo(
-    () => (pattern ? [...pattern.series, revealed ? pattern.answer : "?"] : []),
+    () => [...pattern.series, revealed ? pattern.answer : "?"],
     [pattern, revealed],
   );
 
