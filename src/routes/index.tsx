@@ -197,7 +197,8 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [filter, setFilter] = useState<DiffFilter>("All");
   const [pattern, setPattern] = useState<Pattern>(() => newPatternFiltered("All"));
-  const [input, setInput] = useState("");
+  const [choices, setChoices] = useState<string[]>(() => buildChoices(pattern));
+  const [picked, setPicked] = useState<string | null>(null);
   const [exp, setExp] = useState(0);
   const [solved, setSolved] = useState(0);
   const [lastGain, setLastGain] = useState(0);
@@ -219,7 +220,7 @@ function Index() {
   const [dailyStreak, setDailyStreak] = useState(0);
   const [dailyLastDate, setDailyLastDate] = useState<string | null>(null);
   const [dailyToday, setDailyToday] = useState<DailyState | null>(null);
-  const [dailyInput, setDailyInput] = useState("");
+  const [dailyPicked, setDailyPicked] = useState<string | null>(null);
   const [dailyHintUsed, setDailyHintUsed] = useState(false);
 
   const diff = DIFF_META[pattern.difficulty];
@@ -233,9 +234,25 @@ function Index() {
     if (typeof p.best === "number") setBest(p.best);
     if (typeof p.highExp === "number") setHighExp(p.highExp);
     if (typeof p.totalSolved === "number") setTotalSolved(p.totalSolved);
-    if (p.filter && ["All", "Easy", "Medium", "Hard", "GATE"].includes(p.filter)) {
-      setFilter(p.filter);
-      setPattern((cur) => newPatternFiltered(p.filter as DiffFilter, cur.name));
+    const validFilter =
+      p.filter && ["All", "Easy", "Medium", "Hard", "GATE"].includes(p.filter)
+        ? (p.filter as DiffFilter)
+        : "All";
+    setFilter(validFilter);
+    if (p.pattern && Array.isArray(p.choices) && p.choices.length > 0) {
+      setPattern(p.pattern);
+      setChoices(p.choices);
+      if (typeof p.exp === "number") setExp(p.exp);
+      if (typeof p.solved === "number") setSolved(p.solved);
+      if (typeof p.streak === "number") setStreak(p.streak);
+      if (typeof p.lives === "number") setLives(p.lives);
+      if (typeof p.revealed === "boolean") setRevealed(p.revealed);
+      if (typeof p.hintUsed === "boolean") setHintUsed(p.hintUsed);
+      if (typeof p.lastGain === "number") setLastGain(p.lastGain);
+    } else {
+      const fresh = newPatternFiltered(validFilter);
+      setPattern(fresh);
+      setChoices(buildChoices(fresh));
     }
     setHydrated(true);
   }, []);
@@ -249,8 +266,17 @@ function Index() {
       highLevel: Math.floor(highExp / LEVEL_STEP) + 1,
       totalSolved,
       filter,
+      exp,
+      solved,
+      streak,
+      lives,
+      pattern,
+      choices,
+      revealed,
+      hintUsed,
+      lastGain,
     });
-  }, [best, highExp, totalSolved, filter, hydrated]);
+  }, [best, highExp, totalSolved, filter, hydrated, exp, solved, streak, lives, pattern, choices, revealed, hintUsed, lastGain]);
 
   useEffect(() => {
     if (flash === "none") return;
@@ -264,9 +290,11 @@ function Index() {
     const todayKey = dailyDateKey();
     let today = stored.today;
     if (!today || today.date !== todayKey) {
+      const dp = getDailyLetterPattern();
       today = {
         date: todayKey,
-        pattern: getDailyLetterPattern(),
+        pattern: dp,
+        choices: buildChoices(dp),
         attempted: false,
         success: false,
       };
