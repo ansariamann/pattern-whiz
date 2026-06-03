@@ -38,6 +38,18 @@ const MAX_LIVES = 5;
 const STORAGE_KEY = "pattern-whiz:v1";
 const DAILY_STORAGE_KEY = "pattern-whiz:daily:v1";
 
+// Deterministic placeholder used for the initial render so SSR and the first
+// client paint agree. The real random pattern is generated in a useEffect.
+const PLACEHOLDER_PATTERN: Pattern = {
+  series: ["2", "4", "6", "8", "10"],
+  answer: "12",
+  acceptable: ["12"],
+  name: "Arithmetic",
+  hint: "Each number increases by a fixed amount.",
+  difficulty: "Easy",
+};
+const PLACEHOLDER_CHOICES = ["12", "11", "14", "13"];
+
 // Build 4 multiple-choice options including the correct answer.
 function buildChoices(pattern: Pattern, count = 4): string[] {
   const answer = pattern.answer;
@@ -195,8 +207,8 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [filter, setFilter] = useState<DiffFilter>("All");
-  const [pattern, setPattern] = useState<Pattern>(() => newPatternFiltered("All"));
-  const [choices, setChoices] = useState<string[]>(() => buildChoices(pattern));
+  const [pattern, setPattern] = useState<Pattern>(PLACEHOLDER_PATTERN);
+  const [choices, setChoices] = useState<string[]>(PLACEHOLDER_CHOICES);
   const [picked, setPicked] = useState<string | null>(null);
   const [exp, setExp] = useState(0);
   const [solved, setSolved] = useState(0);
@@ -297,6 +309,9 @@ function Index() {
         attempted: false,
         success: false,
       };
+    } else if (!Array.isArray(today.choices) || today.choices.length === 0) {
+      // Backfill choices for users who saved daily state before MCQ existed
+      today = { ...today, choices: buildChoices(today.pattern) };
     }
     let streak = stored.streak;
     // If user broke the chain (didn't complete yesterday and not today), reset to 0
