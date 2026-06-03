@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -39,9 +38,65 @@ const MAX_LIVES = 5;
 const STORAGE_KEY = "pattern-whiz:v1";
 const DAILY_STORAGE_KEY = "pattern-whiz:daily:v1";
 
+// Build 4 multiple-choice options including the correct answer.
+function buildChoices(pattern: Pattern, count = 4): string[] {
+  const answer = pattern.answer;
+  const set = new Set<string>([answer]);
+  const isNum = /^-?\d+(\.\d+)?$/.test(answer);
+  if (isNum) {
+    const n = Number(answer);
+    const deltas = [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 10, -10];
+    // shuffle deltas for variety
+    for (let i = deltas.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deltas[i], deltas[j]] = [deltas[j], deltas[i]];
+    }
+    for (const d of deltas) {
+      if (set.size >= count) break;
+      const v = String(n + d);
+      if (!pattern.acceptable.includes(v)) set.add(v);
+    }
+  } else {
+    const chars = answer.split("");
+    const shiftAt = (idx: number, delta: number) => {
+      const c = chars[idx];
+      const code = c.charCodeAt(0);
+      let nc = c;
+      if (/[A-Z]/.test(c)) nc = String.fromCharCode(((code - 65 + delta + 26) % 26) + 65);
+      else if (/[a-z]/.test(c)) nc = String.fromCharCode(((code - 97 + delta + 26) % 26) + 97);
+      else if (/\d/.test(c)) nc = String((Number(c) + delta + 10) % 10);
+      const next = [...chars];
+      next[idx] = nc;
+      return next.join("");
+    };
+    const order: [number, number][] = [];
+    for (const d of [1, -1, 2, -2, 3, -3]) {
+      for (let i = chars.length - 1; i >= 0; i--) order.push([i, d]);
+    }
+    for (const [i, d] of order) {
+      if (set.size >= count) break;
+      const v = shiftAt(i, d);
+      if (v !== answer && !pattern.acceptable.includes(v)) set.add(v);
+    }
+    // last-resort filler
+    let fill = 0;
+    while (set.size < count && fill < 50) {
+      set.add(answer + String.fromCharCode(65 + (fill % 26)));
+      fill++;
+    }
+  }
+  const arr = Array.from(set);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, count);
+}
+
 type DailyState = {
   date: string;
   pattern: Pattern;
+  choices: string[];
   attempted: boolean;
   success: boolean;
 };
@@ -93,6 +148,16 @@ type PersistedState = {
   highLevel: number;
   totalSolved: number;
   filter: DiffFilter;
+  // Live game state so refresh doesn't reset progress
+  exp: number;
+  solved: number;
+  streak: number;
+  lives: number;
+  pattern: Pattern | null;
+  choices: string[];
+  revealed: boolean;
+  hintUsed: boolean;
+  lastGain: number;
 };
 
 const loadPersisted = (): Partial<PersistedState> => {
@@ -131,7 +196,8 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [filter, setFilter] = useState<DiffFilter>("All");
   const [pattern, setPattern] = useState<Pattern>(() => newPatternFiltered("All"));
-  const [input, setInput] = useState("");
+  const [choices, setChoices] = useState<string[]>(() => buildChoices(pattern));
+  const [picked, setPicked] = useState<string | null>(null);
   const [exp, setExp] = useState(0);
   const [solved, setSolved] = useState(0);
   const [lastGain, setLastGain] = useState(0);
@@ -153,7 +219,7 @@ function Index() {
   const [dailyStreak, setDailyStreak] = useState(0);
   const [dailyLastDate, setDailyLastDate] = useState<string | null>(null);
   const [dailyToday, setDailyToday] = useState<DailyState | null>(null);
-  const [dailyInput, setDailyInput] = useState("");
+  const [dailyPicked, setDailyPicked] = useState<string | null>(null);
   const [dailyHintUsed, setDailyHintUsed] = useState(false);
 
   const diff = DIFF_META[pattern.difficulty];
@@ -167,9 +233,25 @@ function Index() {
     if (typeof p.best === "number") setBest(p.best);
     if (typeof p.highExp === "number") setHighExp(p.highExp);
     if (typeof p.totalSolved === "number") setTotalSolved(p.totalSolved);
-    if (p.filter && ["All", "Easy", "Medium", "Hard", "GATE"].includes(p.filter)) {
-      setFilter(p.filter);
-      setPattern((cur) => newPatternFiltered(p.filter as DiffFilter, cur.name));
+    const validFilter =
+      p.filter && ["All", "Easy", "Medium", "Hard", "GATE"].includes(p.filter)
+        ? (p.filter as DiffFilter)
+        : "All";
+    setFilter(validFilter);
+    if (p.pattern && Array.isArray(p.choices) && p.choices.length > 0) {
+      setPattern(p.pattern);
+      setChoices(p.choices);
+      if (typeof p.exp === "number") setExp(p.exp);
+      if (typeof p.solved === "number") setSolved(p.solved);
+      if (typeof p.streak === "number") setStreak(p.streak);
+      if (typeof p.lives === "number") setLives(p.lives);
+      if (typeof p.revealed === "boolean") setRevealed(p.revealed);
+      if (typeof p.hintUsed === "boolean") setHintUsed(p.hintUsed);
+      if (typeof p.lastGain === "number") setLastGain(p.lastGain);
+    } else {
+      const fresh = newPatternFiltered(validFilter);
+      setPattern(fresh);
+      setChoices(buildChoices(fresh));
     }
     setHydrated(true);
   }, []);
@@ -183,8 +265,17 @@ function Index() {
       highLevel: Math.floor(highExp / LEVEL_STEP) + 1,
       totalSolved,
       filter,
+      exp,
+      solved,
+      streak,
+      lives,
+      pattern,
+      choices,
+      revealed,
+      hintUsed,
+      lastGain,
     });
-  }, [best, highExp, totalSolved, filter, hydrated]);
+  }, [best, highExp, totalSolved, filter, hydrated, exp, solved, streak, lives, pattern, choices, revealed, hintUsed, lastGain]);
 
   useEffect(() => {
     if (flash === "none") return;
@@ -198,9 +289,11 @@ function Index() {
     const todayKey = dailyDateKey();
     let today = stored.today;
     if (!today || today.date !== todayKey) {
+      const dp = getDailyLetterPattern();
       today = {
         date: todayKey,
-        pattern: getDailyLetterPattern(),
+        pattern: dp,
+        choices: buildChoices(dp),
         attempted: false,
         success: false,
       };
@@ -232,9 +325,10 @@ function Index() {
   const dailyDone = !!dailyToday?.success;
   const dailyAttempted = !!dailyToday?.attempted;
 
-  const submitDaily = () => {
-    if (!dailyToday || dailyAttempted || !dailyInput.trim()) return;
-    const correct = checkAnswer(dailyToday.pattern, dailyInput);
+  const submitDaily = (choice: string) => {
+    if (!dailyToday || dailyAttempted || !choice) return;
+    setDailyPicked(choice);
+    const correct = checkAnswer(dailyToday.pattern, choice);
     const updated: DailyState = {
       ...dailyToday,
       attempted: true,
@@ -270,14 +364,18 @@ function Index() {
   // Reset hint state whenever the dialog opens or the day rolls
   useEffect(() => {
     if (dailyOpen) {
-      setDailyInput("");
+      setDailyPicked(null);
       setDailyHintUsed(false);
     }
   }, [dailyOpen, dailyToday?.date]);
 
   const nextRound = (resetAll = false) => {
-    setPattern((p) => newPatternFiltered(filter, p.name));
-    setInput("");
+    setPattern((p) => {
+      const np = newPatternFiltered(filter, p.name);
+      setChoices(buildChoices(np));
+      return np;
+    });
+    setPicked(null);
     setRevealed(false);
     setHintUsed(false);
     if (resetAll) {
@@ -292,15 +390,20 @@ function Index() {
 
   const changeFilter = (f: DiffFilter) => {
     setFilter(f);
-    setPattern((p) => newPatternFiltered(f, p.name));
-    setInput("");
+    setPattern((p) => {
+      const np = newPatternFiltered(f, p.name);
+      setChoices(buildChoices(np));
+      return np;
+    });
+    setPicked(null);
     setRevealed(false);
     setHintUsed(false);
   };
 
-  const submit = () => {
-    if (!input.trim() || revealed) return;
-    if (checkAnswer(pattern, input)) {
+  const submit = (choice: string) => {
+    if (!choice || revealed) return;
+    setPicked(choice);
+    if (checkAnswer(pattern, choice)) {
       const newStreak = streak + 1;
       const base = DIFF_META[pattern.difficulty].xp;
       const bonus = Math.floor(newStreak / 3) * 5;
@@ -356,7 +459,7 @@ function Index() {
   );
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-4 py-10">
+    <div className="relative min-h-screen overflow-hidden px-3 py-4 sm:px-4 sm:py-8">
       {/* Animated background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-background to-fuchsia-50 dark:from-indigo-950/40 dark:via-background dark:to-fuchsia-950/40" />
@@ -379,15 +482,12 @@ function Index() {
       </div>
 
       <div className="mx-auto max-w-3xl">
-        <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <header className="mb-3 flex flex-wrap items-center justify-between gap-3 sm:mb-5 sm:gap-4">
           <div>
-            <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-600">
-              <Sparkles className="h-3 w-3" /> Aptitude trainer
-            </div>
-            <h1 className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-3xl font-black tracking-tight text-transparent sm:text-4xl md:text-5xl">
+            <h1 className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-2xl font-black tracking-tight text-transparent sm:text-4xl md:text-5xl">
               Pattern Whiz
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="hidden text-sm text-muted-foreground sm:block">
               GATE-grade sequences. Solve → earn XP → level up.
             </p>
           </div>
@@ -397,11 +497,11 @@ function Index() {
         <button
           type="button"
           onClick={() => setDailyOpen(true)}
-          className="mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-amber-400/40 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 p-3 text-left shadow-sm transition-all hover:border-amber-400/70 hover:shadow-md"
+          className="mb-3 flex w-full items-center justify-between gap-3 rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 p-2 text-left shadow-sm transition-all hover:border-amber-400/70 hover:shadow-md sm:mb-4 sm:rounded-2xl sm:p-3"
         >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-rose-500 text-white shadow">
-              <CalendarDays className="h-5 w-5" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-rose-500 text-white shadow sm:h-10 sm:w-10 sm:rounded-xl">
+              <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 text-sm font-bold">
@@ -417,22 +517,19 @@ function Index() {
                   </span>
                 )}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="hidden text-xs text-muted-foreground sm:block">
                 One letter-series puzzle, every day.
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-orange-400/40 bg-orange-500/10 px-3 py-1 text-sm font-bold text-orange-600">
+          <div className="flex items-center gap-1 rounded-full border border-orange-400/40 bg-orange-500/10 px-2 py-0.5 text-xs font-bold text-orange-600 sm:gap-1.5 sm:px-3 sm:py-1 sm:text-sm">
             <Flame className="h-4 w-4" />
             <span className="tabular-nums">{dailyStreak}</span>
-            <span className="text-[10px] uppercase tracking-wider opacity-80">
-              streak
-            </span>
           </div>
         </button>
 
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <div className="mb-3 flex flex-wrap items-center gap-1.5 sm:mb-4 sm:gap-2">
+          <span className="hidden items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground sm:inline-flex">
             <Shuffle className="h-3 w-3" /> Difficulty
           </span>
           {(["All", "Easy", "Medium", "Hard", "GATE"] as DiffFilter[]).map((f) => {
@@ -443,7 +540,7 @@ function Index() {
                 key={f}
                 type="button"
                 onClick={() => changeFilter(f)}
-                className={`rounded-full border px-3 py-1 text-xs font-bold transition-all ${
+                className={`rounded-full border px-2.5 py-0.5 text-xs font-bold transition-all sm:px-3 sm:py-1 ${
                   active
                     ? meta
                       ? `bg-gradient-to-r ${meta.gradient} text-white border-transparent shadow-md`
@@ -465,28 +562,24 @@ function Index() {
               : { x: 0 }
           }
           transition={{ duration: 0.45 }}
-          className={`relative overflow-hidden rounded-3xl border bg-card/70 p-6 shadow-2xl backdrop-blur-xl transition-all md:p-10 ${flashClass}`}
+          className={`relative overflow-hidden rounded-2xl border bg-card/70 p-4 shadow-2xl backdrop-blur-xl transition-all sm:rounded-3xl sm:p-6 md:p-8 ${flashClass}`}
         >
           <div
             className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${diff.gradient}`}
           />
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-4">
             <span
               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${diff.chip}`}
             >
               <diff.icon className="h-3.5 w-3.5" />
               {diff.label}
             </span>
-            <div className="flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-              <span>Solved {solved}</span>
-              <span className="text-border">·</span>
-              <span className="inline-flex items-center gap-1">
-                <Flame className="h-3 w-3 text-orange-500" /> {streak}
-              </span>
+            <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+              Solved {solved}
             </div>
           </div>
 
-          <div className="mb-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3 md:gap-4">
+          <div className="mb-5 flex flex-wrap items-center justify-center gap-1.5 sm:mb-6 sm:gap-3 md:gap-4">
             <AnimatePresence mode="popLayout">
               {displaySeries.map((item, i) => {
                 const isLast = i === displaySeries.length - 1;
@@ -496,7 +589,7 @@ function Index() {
                     initial={{ opacity: 0, y: 12, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ delay: i * 0.06, type: "spring", stiffness: 260 }}
-                    className={`flex h-12 min-w-12 items-center justify-center rounded-xl border px-2.5 text-lg font-bold tabular-nums shadow-sm transition-all sm:h-16 sm:min-w-16 sm:rounded-2xl sm:px-4 sm:text-2xl md:h-20 md:min-w-20 md:text-3xl ${
+                    className={`flex h-10 min-w-10 items-center justify-center rounded-lg border px-2 text-base font-bold tabular-nums shadow-sm transition-all sm:h-14 sm:min-w-14 sm:rounded-xl sm:px-3 sm:text-2xl md:h-16 md:min-w-16 md:text-3xl ${
                       isLast
                         ? revealed
                           ? flash === "bad"
@@ -513,55 +606,56 @@ function Index() {
             </AnimatePresence>
           </div>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              submit();
-            }}
-            className="flex flex-col gap-3 sm:flex-row"
-          >
-            <Input
-              autoFocus
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Your answer…"
-              className="h-12 text-lg"
-              disabled={revealed}
-            />
-            <Button
-              type="submit"
-              className="h-12 px-6 text-base"
-              disabled={revealed || !input.trim()}
-            >
-              Submit
-            </Button>
-          </form>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            {choices.map((c) => {
+              const isPicked = picked === c;
+              const isCorrect = checkAnswer(pattern, c);
+              const stateClass = revealed
+                ? isCorrect
+                  ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                  : isPicked
+                    ? "border-rose-500/60 bg-rose-500/15 text-rose-700 dark:text-rose-400"
+                    : "border-border bg-card/40 text-muted-foreground opacity-60"
+                : "border-border bg-card hover:border-primary/60 hover:bg-primary/5 active:scale-[0.98]";
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => submit(c)}
+                  disabled={revealed}
+                  className={`h-12 rounded-xl border text-base font-bold tabular-nums shadow-sm transition-all sm:h-14 sm:text-lg ${stateClass}`}
+                >
+                  {c}
+                </button>
+              );
+            })}
+          </div>
 
           {revealed && flash === "bad" && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-4 flex flex-col gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="mt-3 flex flex-col gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="text-sm">
                 <div className="font-semibold text-rose-600">
                   Answer: <span className="tabular-nums">{pattern.answer}</span>
                 </div>
-                <div className="text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   {pattern.name} — {pattern.hint}
                 </div>
               </div>
               <Button
                 type="button"
                 onClick={() => nextRound()}
-                className="h-10 shrink-0"
+                className="h-9 shrink-0"
               >
                 Continue <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </motion.div>
           )}
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
             <Button
               type="button"
               variant="ghost"
@@ -585,7 +679,7 @@ function Index() {
           </div>
         </motion.div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
+        <p className="mt-3 text-center text-[11px] text-muted-foreground sm:mt-5 sm:text-xs">
           Best streak: {best} · Top level: {highLevel} ({highExp} XP) · Solved all-time: {totalSolved}
         </p>
       </div>
@@ -667,24 +761,18 @@ function Index() {
               </div>
 
               {!dailyAttempted ? (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    submitDaily();
-                  }}
-                  className="flex flex-col gap-3 sm:flex-row"
-                >
-                  <Input
-                    autoFocus
-                    value={dailyInput}
-                    onChange={(e) => setDailyInput(e.target.value)}
-                    placeholder="Your answer…"
-                    className="h-11"
-                  />
-                  <Button type="submit" disabled={!dailyInput.trim()} className="h-11 px-5">
-                    Submit
-                  </Button>
-                </form>
+                <div className="grid grid-cols-2 gap-2">
+                  {dailyToday.choices.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => submitDaily(c)}
+                      className="h-11 rounded-xl border border-border bg-card text-base font-bold tabular-nums shadow-sm transition-all hover:border-primary/60 hover:bg-primary/5 active:scale-[0.98]"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
               ) : (
                 <div
                   className={`rounded-xl border p-3 text-sm ${
