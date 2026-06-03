@@ -297,6 +297,9 @@ function Index() {
         attempted: false,
         success: false,
       };
+    } else if (!Array.isArray(today.choices) || today.choices.length === 0) {
+      // Backfill choices for users who saved daily state before MCQ existed
+      today = { ...today, choices: buildChoices(today.pattern) };
     }
     let streak = stored.streak;
     // If user broke the chain (didn't complete yesterday and not today), reset to 0
