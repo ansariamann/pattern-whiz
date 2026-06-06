@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>Pattern Whiz — Predict the Next</title>
   <meta name="description" content="Spot the pattern and predict the next item. Numbers, letters, shapes — a new puzzle every round. GATE-grade sequences." />
   <meta name="author" content="Pattern Whiz" />
@@ -105,11 +108,8 @@
       <!-- Series display -->
       <div class="series" id="series-display"></div>
 
-      <!-- Input form -->
-      <form class="input-row" id="answer-form">
-        <input type="text" class="input" id="answer-input" placeholder="Your answer…" autocomplete="off" autofocus />
-        <button type="submit" class="btn btn--primary" id="submit-btn">Submit</button>
-      </form>
+      <!-- Multiple choice options -->
+      <div class="options-grid" id="options-grid"></div>
 
       <!-- Actions -->
       <div class="actions">

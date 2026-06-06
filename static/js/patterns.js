@@ -720,6 +720,151 @@ function collatzPath() {
   return { series: ['6','3','10','5','16','8'], answer: '4', acceptable: ['4'], name: 'Collatz path', hint: 'If even, halve; if odd, 3n+1.' };
 }
 
+// ---------- New patterns (Batch 4) ----------
+
+function doublingFromSmall() {
+  const start = rand(1, 5);
+  const arr = [start];
+  for (let i = 0; i < 4; i++) arr.push(arr[arr.length - 1] * 2);
+  const ans = arr[arr.length - 1] * 2;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Doubling', hint: 'Each term is double the previous.' };
+}
+
+function tripling() {
+  const start = rand(1, 3);
+  const arr = [start];
+  for (let i = 0; i < 4; i++) arr.push(arr[arr.length - 1] * 3);
+  const ans = arr[arr.length - 1] * 3;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Tripling', hint: 'Each term is triple the previous.' };
+}
+
+function addPrevTwo() {
+  const a = rand(2, 6), b = rand(3, 8);
+  const arr = [a, b];
+  for (let i = 0; i < 4; i++) arr.push(arr[arr.length - 1] + arr[arr.length - 2]);
+  const ans = arr[arr.length - 1] + arr[arr.length - 2];
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Sum of two previous', hint: 'Like Fibonacci: add the last two.' };
+}
+
+function staircase() {
+  // +1, +2, +3, +4, +5 ...
+  let cur = rand(1, 5);
+  const arr = [cur];
+  for (let i = 1; i <= 4; i++) { cur += i; arr.push(cur); }
+  const ans = cur + 5;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Staircase', hint: 'Add 1, then 2, then 3, etc.' };
+}
+
+function squaredIndex() {
+  // a(n) = n^2 + 2n
+  const arr = Array.from({ length: 5 }, (_, i) => { const n = i + 1; return n * n + 2 * n; });
+  const ans = 36 + 12;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'n² + 2n', hint: 'n squared plus twice n.' };
+}
+
+function cubicSimple() {
+  const arr = Array.from({ length: 5 }, (_, i) => (i + 1) ** 3);
+  const ans = 6 ** 3;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Perfect cubes', hint: 'Cubes of consecutive integers.' };
+}
+
+function zigzag() {
+  // +5, -2, +5, -2, ...
+  const start = rand(3, 10);
+  const up = rand(4, 8), down = rand(1, 3);
+  const arr = [start];
+  for (let i = 0; i < 5; i++) arr.push(i % 2 === 0 ? arr[i] + up : arr[i] - down);
+  const next = arr.length % 2 === 1 ? arr[arr.length - 1] + up : arr[arr.length - 1] - down;
+  return { series: arr.map(String), answer: String(next), acceptable: [String(next)], name: 'Zigzag', hint: 'Alternates: add big, subtract small.' };
+}
+
+function nTimesPlusOne() {
+  // a(n) = n * (n+1) + 1: 3, 7, 13, 21, 31, 43
+  const arr = Array.from({ length: 5 }, (_, i) => (i+1)*(i+2) + 1);
+  const ans = 6 * 7 + 1;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'n(n+1) + 1', hint: 'Oblong numbers plus 1.' };
+}
+
+function powersOfFive() {
+  const arr = [1, 5, 25, 125, 625];
+  return { series: arr.map(String), answer: '3125', acceptable: ['3125'], name: 'Powers of 5', hint: 'Each term is the next power of 5.' };
+}
+
+function addSquareRoot() {
+  // perfect squares: add sqrt: 4→4+2=6, 9→9+3=12, 16→16+4=20, 25→25+5=30, 36→36+6=42
+  const arr = Array.from({ length: 5 }, (_, i) => { const n = i + 2; return n * n + n; });
+  const ans = 7 * 7 + 7;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'n² + n (from 2)', hint: 'Square a number and add itself.' };
+}
+
+function twoNPlusThree() {
+  const start = rand(0, 4);
+  const arr = Array.from({ length: 5 }, (_, i) => 2 * (start + i) + 3);
+  const ans = 2 * (start + 5) + 3;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: '2n + 3', hint: 'Linear formula: 2n + 3.' };
+}
+
+function threeNMinusOne() {
+  const start = rand(1, 5);
+  const arr = Array.from({ length: 5 }, (_, i) => 3 * (start + i) - 1);
+  const ans = 3 * (start + 5) - 1;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: '3n − 1', hint: 'Linear formula: 3n − 1.' };
+}
+
+function sumOfDigitsEqual() {
+  // numbers whose digits sum to a value: 10, 19, 28, 37, 46, 55
+  const arr = [10, 19, 28, 37, 46];
+  return { series: arr.map(String), answer: '55', acceptable: ['55'], name: 'Digit sum = constant', hint: 'All numbers have the same digit sum.' };
+}
+
+function nCubeMinusNCube() {
+  // (n+1)^3 - n^3 = 3n^2 + 3n + 1: 7, 19, 37, 61, 91, 127
+  const f = (n) => 3*n*n + 3*n + 1;
+  const arr = Array.from({ length: 5 }, (_, i) => f(i + 1));
+  const ans = f(6);
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Cube differences', hint: 'Difference between consecutive cubes.' };
+}
+
+function starNumbers() {
+  // S(n) = 6n(n-1)+1: 1, 13, 37, 73, 121, 181
+  const f = (n) => 6*n*(n-1) + 1;
+  const arr = Array.from({ length: 5 }, (_, i) => f(i + 1));
+  const ans = f(6);
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Star numbers', hint: '6n(n−1) + 1.' };
+}
+
+function happyPath() {
+  // powers of 4: 1, 4, 16, 64, 256, 1024
+  const arr = Array.from({ length: 5 }, (_, i) => 4 ** i);
+  const ans = 4 ** 5;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Powers of 4', hint: 'Each term is the next power of 4.' };
+}
+
+function sumFirstN() {
+  // T(n) = n(n+1)/2: 1, 3, 6, 10, 15, 21
+  const arr = Array.from({ length: 5 }, (_, i) => { const n = i + 1; return n*(n+1)/2; });
+  const ans = 6*7/2;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Triangular numbers', hint: 'Sum of first n natural numbers.' };
+}
+
+function reverseArithmetic() {
+  const start = rand(50, 100);
+  const step = rand(3, 8);
+  const arr = Array.from({ length: 5 }, (_, i) => start - i * step);
+  const ans = start - 5 * step;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Decreasing arithmetic', hint: 'Subtract the same amount each time.' };
+}
+
+function compositeSeries() {
+  // first composites: 4, 6, 8, 9, 10, 12, 14, 15
+  return { series: ['4','6','8','9','10','12'], answer: '14', acceptable: ['14'], name: 'Composite numbers', hint: 'Non-prime, non-1 positive integers.' };
+}
+
+function lookAndSay() {
+  // simplified: 1, 11, 21, 1211, 111221
+  return { series: ['1','11','21','1211'], answer: '111221', acceptable: ['111221'], name: 'Look-and-say', hint: 'Describe what you see in the previous term.' };
+}
+
 // ---------- Registry ----------
 
 const registry = [
@@ -746,6 +891,12 @@ const registry = [
   { fn: alphabetReverseSimple, difficulty: 'Easy' },
   { fn: squaresPlusOne, difficulty: 'Easy' },
   { fn: consonantCycle, difficulty: 'Easy' },
+  { fn: doublingFromSmall, difficulty: 'Easy' },
+  { fn: tripling, difficulty: 'Easy' },
+  { fn: addPrevTwo, difficulty: 'Easy' },
+  { fn: sumFirstN, difficulty: 'Easy' },
+  { fn: twoNPlusThree, difficulty: 'Easy' },
+  { fn: reverseArithmetic, difficulty: 'Easy' },
 
   // Medium
   { fn: alternating, difficulty: 'Medium' },
@@ -772,6 +923,11 @@ const registry = [
   { fn: alternatingPlusMinus, difficulty: 'Medium' },
   { fn: indexTimesNext, difficulty: 'Medium' },
   { fn: fibPlusN, difficulty: 'Medium' },
+  { fn: staircase, difficulty: 'Medium' },
+  { fn: zigzag, difficulty: 'Medium' },
+  { fn: cubicSimple, difficulty: 'Medium' },
+  { fn: threeNMinusOne, difficulty: 'Medium' },
+  { fn: powersOfFive, difficulty: 'Medium' },
 
   // Hard
   { fn: cubesShifted, difficulty: 'Hard' },
@@ -801,6 +957,11 @@ const registry = [
   { fn: letterCubeIndex, difficulty: 'Hard' },
   { fn: nthPrimePlusN, difficulty: 'Hard' },
   { fn: powerMinusSquare, difficulty: 'Hard' },
+  { fn: squaredIndex, difficulty: 'Hard' },
+  { fn: nTimesPlusOne, difficulty: 'Hard' },
+  { fn: addSquareRoot, difficulty: 'Hard' },
+  { fn: sumOfDigitsEqual, difficulty: 'Hard' },
+  { fn: compositeSeries, difficulty: 'Hard' },
 
   // GATE
   { fn: lucasSeries, difficulty: 'GATE' },
@@ -829,6 +990,10 @@ const registry = [
   { fn: harmonicDenoms, difficulty: 'GATE' },
   { fn: magicSquaresSum, difficulty: 'GATE' },
   { fn: collatzPath, difficulty: 'GATE' },
+  { fn: nCubeMinusNCube, difficulty: 'GATE' },
+  { fn: starNumbers, difficulty: 'GATE' },
+  { fn: happyPath, difficulty: 'GATE' },
+  { fn: lookAndSay, difficulty: 'GATE' },
 ];
 
 // ---------- Public API ----------
@@ -854,5 +1019,90 @@ function checkAnswer(pattern, input) {
   return pattern.acceptable.some(a => norm(a) === n);
 }
 
+/**
+ * Generate 4 MCQ options (including the correct answer), shuffled.
+ * Tries to create plausible wrong answers near the correct one.
+ */
+function generateOptions(pattern) {
+  const correct = pattern.answer;
+  const num = Number(correct);
+  const options = new Set();
+  options.add(correct);
+
+  if (!isNaN(num) && isFinite(num) && /^-?\d+$/.test(correct.trim())) {
+    // Numeric answer — generate nearby wrong answers
+    const magnitude = Math.max(Math.abs(num), 1);
+    const spread = Math.max(Math.ceil(magnitude * 0.25), 2);
+
+    let attempts = 0;
+    while (options.size < 4 && attempts < 40) {
+      const offset = rand(1, spread) * (Math.random() < 0.5 ? 1 : -1);
+      const wrong = num + offset;
+      if (wrong !== num) options.add(String(wrong));
+      attempts++;
+    }
+    // Fallback if still not enough
+    let fallback = 1;
+    while (options.size < 4) {
+      if (!options.has(String(num + fallback))) options.add(String(num + fallback));
+      if (!options.has(String(num - fallback))) options.add(String(num - fallback));
+      fallback++;
+    }
+  } else {
+    // Non-numeric (letter, emoji, alphanumeric) — generate plausible alternatives
+    const isLetter = /^[A-Za-z]$/.test(correct);
+    if (isLetter) {
+      const code = correct.toUpperCase().charCodeAt(0);
+      const offsets = [-2, -1, 1, 2, 3, -3];
+      for (const off of offsets) {
+        if (options.size >= 4) break;
+        const c = code + off;
+        if (c >= 65 && c <= 90) options.add(String.fromCharCode(c));
+      }
+    }
+    // Alphanumeric like "E5" or "K36"
+    const alphaNum = correct.match(/^([A-Za-z]+)(\d+)$/);
+    if (alphaNum) {
+      const letterPart = alphaNum[1];
+      const numPart = Number(alphaNum[2]);
+      const offsets = [
+        { l: 1, n: rand(1, 3) }, { l: -1, n: rand(1, 3) },
+        { l: 0, n: rand(1, 5) }, { l: 2, n: -rand(1, 3) },
+      ];
+      for (const off of offsets) {
+        if (options.size >= 4) break;
+        const newLetter = String.fromCharCode(letterPart.charCodeAt(0) + off.l);
+        if (newLetter >= 'A' && newLetter <= 'Z') {
+          const newNum = Math.max(0, numPart + off.n);
+          const opt = newLetter + newNum;
+          if (opt !== correct) options.add(opt);
+        }
+      }
+    }
+    // Emoji / symbol fallback — use items from the series as distractors
+    if (options.size < 4) {
+      const pool = pattern.series.filter(s => s !== correct);
+      for (const s of pool) {
+        if (options.size >= 4) break;
+        options.add(s);
+      }
+    }
+    // Last resort: append indices
+    let idx = 1;
+    while (options.size < 4) {
+      options.add(correct + idx);
+      idx++;
+    }
+  }
+
+  // Convert to array and shuffle (Fisher-Yates)
+  const arr = Array.from(options).slice(0, 4);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = rand(0, i);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 // Expose globally
-window.PatternEngine = { newPatternFiltered, checkAnswer };
+window.PatternEngine = { newPatternFiltered, checkAnswer, generateOptions };

@@ -1,12 +1,13 @@
 /* ===================================================================
    Pattern Whiz — Game Logic & DOM
    All game state, rendering, animations, toasts, modal
+   Mobile-first MCQ version
    =================================================================== */
 
 (function () {
   'use strict';
 
-  const { newPatternFiltered, checkAnswer } = window.PatternEngine;
+  const { newPatternFiltered, checkAnswer, generateOptions } = window.PatternEngine;
 
   // ---------- Difficulty metadata ----------
   const DIFF_ICONS = {
@@ -22,7 +23,7 @@
   // ---------- Game State ----------
   let filter = 'All';
   let pattern = newPatternFiltered('All');
-  let input = '';
+  let currentOptions = generateOptions(pattern);
   let exp = 0;
   let solved = 0;
   let lastGain = 0;
@@ -48,8 +49,7 @@
   const solvedLabel = $('solved-label');
   const streakInlineVal = $('streak-inline-val');
   const seriesDisplay = $('series-display');
-  const answerInput = $('answer-input');
-  const submitBtn = $('submit-btn');
+  const optionsGrid = $('options-grid');
   const hintBtn = $('hint-btn');
   const skipBtn = $('skip-btn');
   const gameCard = $('game-card');
@@ -88,10 +88,11 @@
 
     // Series items
     renderSeries();
+    
+    // MCQ Options
+    renderOptions();
 
     // Input state
-    answerInput.disabled = revealed;
-    submitBtn.disabled = revealed;
     hintBtn.disabled = hintUsed || revealed;
     hintBtn.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 4 12.9V17H8v-2.1A7 7 0 0 1 12 2z"/></svg> ${hintUsed ? 'Hint shown' : 'Hint (resets streak)'}`;
     skipBtn.disabled = revealed;
@@ -113,7 +114,6 @@
 
       if (isLast) {
         if (revealed) {
-          // Was the answer correct or wrong?
           if (lastAnswerCorrect) {
             el.classList.add('series-item--correct');
           } else {
@@ -130,18 +130,43 @@
     });
   }
 
-  // Track if last answer was correct for styling
+  function renderOptions() {
+    optionsGrid.innerHTML = '';
+    currentOptions.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt;
+      btn.disabled = revealed;
+      
+      if (revealed) {
+        if (checkAnswer(pattern, opt)) {
+          // This is the correct answer
+          btn.classList.add(lastAnswerCorrect && selectedOption === opt ? 'option-btn--correct' : 'option-btn--reveal');
+        } else if (selectedOption === opt) {
+          // This is the wrong answer the user picked
+          btn.classList.add('option-btn--wrong');
+        }
+      }
+
+      btn.addEventListener('click', () => {
+        if (!revealed) submit(opt);
+      });
+      optionsGrid.appendChild(btn);
+    });
+  }
+
   let lastAnswerCorrect = false;
+  let selectedOption = null;
 
   // ---------- Actions ----------
 
   function nextRound(resetAll = false) {
     pattern = newPatternFiltered(filter, pattern.name);
-    input = '';
-    answerInput.value = '';
+    currentOptions = generateOptions(pattern);
     revealed = false;
     hintUsed = false;
     lastAnswerCorrect = false;
+    selectedOption = null;
 
     if (resetAll) {
       exp = 0;
@@ -153,17 +178,11 @@
     }
 
     render();
-
-    if (!resetAll) {
-      answerInput.focus();
-    } else {
-      setTimeout(() => answerInput.focus(), 100);
-    }
   }
 
-  function submit() {
-    const val = answerInput.value.trim();
-    if (!val || revealed) return;
+  function submit(val) {
+    if (revealed) return;
+    selectedOption = val;
 
     if (checkAnswer(pattern, val)) {
       // Correct
@@ -183,7 +202,7 @@
       showToast('success', 'Correct!', `${pattern.difficulty} · ${pattern.name}`);
       revealed = true;
       render();
-      setTimeout(() => nextRound(), 900);
+      setTimeout(() => nextRound(), 1000);
     } else {
       // Wrong
       lastAnswerCorrect = false;
@@ -198,7 +217,7 @@
       render();
 
       if (remaining <= 0) {
-        setTimeout(() => showGameOver(), 700);
+        setTimeout(() => showGameOver(), 800);
       } else {
         setTimeout(() => nextRound(), 1500);
       }
@@ -226,7 +245,7 @@
 
   function shakeCard() {
     gameCard.classList.remove('card--shake');
-    // Trigger reflow to restart animation
+    // Trigger reflow
     void gameCard.offsetWidth;
     gameCard.classList.add('card--shake');
     setTimeout(() => gameCard.classList.remove('card--shake'), 450);
@@ -287,22 +306,15 @@
 
     // Generate new pattern with filter
     pattern = newPatternFiltered(filter, pattern.name);
-    input = '';
-    answerInput.value = '';
+    currentOptions = generateOptions(pattern);
     revealed = false;
     hintUsed = false;
     lastAnswerCorrect = false;
+    selectedOption = null;
     render();
-    answerInput.focus();
   }
 
   // ---------- Event Listeners ----------
-
-  // Form submit
-  $('answer-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    submit();
-  });
 
   // Hint
   hintBtn.addEventListener('click', useHint);
@@ -327,13 +339,7 @@
     });
   });
 
-  // Sync input
-  answerInput.addEventListener('input', (e) => {
-    input = e.target.value;
-  });
-
   // ---------- Init ----------
   render();
-  answerInput.focus();
 
 })();
