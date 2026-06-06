@@ -20,19 +20,31 @@
   const DIFF_XP = { Easy: 10, Medium: 20, Hard: 40, GATE: 80 };
   const LEVEL_STEP = 100;
 
-  // ---------- Game State ----------
-  let filter = 'All';
-  let pattern = newPatternFiltered('All');
+  // ---------- Game State (Persisted) ----------
+  let filter = localStorage.getItem('pw_filter') || 'All';
+  let exp = parseInt(localStorage.getItem('pw_exp')) || 0;
+  let solved = parseInt(localStorage.getItem('pw_solved')) || 0;
+  let streak = parseInt(localStorage.getItem('pw_streak')) || 0;
+  let best = parseInt(localStorage.getItem('pw_best')) || 0;
+  
+  // Starting with 5 lives
+  let lives = 5;
+
+  let pattern = newPatternFiltered(filter);
   let currentOptions = generateOptions(pattern);
-  let exp = 0;
-  let solved = 0;
   let lastGain = 0;
-  let streak = 0;
-  let best = 0;
-  let lives = 3;
   let revealed = false;
   let hintUsed = false;
   let flashTimeout = null;
+  let isDailyMode = false;
+
+  function saveState() {
+    localStorage.setItem('pw_filter', filter);
+    localStorage.setItem('pw_exp', exp);
+    localStorage.setItem('pw_solved', solved);
+    localStorage.setItem('pw_streak', streak);
+    localStorage.setItem('pw_best', best);
+  }
 
   // ---------- DOM References ----------
   const $ = (id) => document.getElementById(id);
@@ -59,6 +71,7 @@
   const playAgainBtn = $('play-again-btn');
   const toastContainer = $('toast-container');
   const filterBar = $('filter-bar');
+  const dailyBtn = $('daily-btn');
 
   // ---------- Render ----------
 
@@ -80,9 +93,22 @@
     });
 
     // Card header
-    accentBar.setAttribute('data-diff', pattern.difficulty);
-    diffChip.setAttribute('data-diff', pattern.difficulty);
-    diffChip.innerHTML = `${DIFF_ICONS[pattern.difficulty]} ${pattern.difficulty}`;
+    if (isDailyMode) {
+      accentBar.style.background = 'linear-gradient(to right, #fbbf24, #f59e0b)';
+      diffChip.innerHTML = '📅 Daily Challenge';
+      diffChip.style.background = 'rgba(245, 158, 11, 0.15)';
+      diffChip.style.color = '#b45309';
+      diffChip.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+    } else {
+      accentBar.style.background = '';
+      accentBar.setAttribute('data-diff', pattern.difficulty);
+      diffChip.style.background = '';
+      diffChip.style.color = '';
+      diffChip.style.borderColor = '';
+      diffChip.setAttribute('data-diff', pattern.difficulty);
+      diffChip.innerHTML = `${DIFF_ICONS[pattern.difficulty]} ${pattern.difficulty}`;
+    }
+
     solvedLabel.textContent = `Solved ${solved}`;
     streakInlineVal.textContent = streak;
 
@@ -121,7 +147,8 @@
           }
         } else {
           el.classList.add('series-item--question');
-          el.setAttribute('data-diff', pattern.difficulty);
+          if (!isDailyMode) el.setAttribute('data-diff', pattern.difficulty);
+          else el.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
         }
       }
 
@@ -161,6 +188,15 @@
   // ---------- Actions ----------
 
   function nextRound(resetAll = false) {
+    if (isDailyMode) {
+      // If we just finished daily mode, revert to normal
+      isDailyMode = false;
+      // Reset filter chips visually
+      filterBar.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.classList.toggle('filter-chip--active', chip.getAttribute('data-filter') === filter);
+      });
+    }
+
     pattern = newPatternFiltered(filter, pattern.name);
     currentOptions = generateOptions(pattern);
     revealed = false;
@@ -172,10 +208,34 @@
       exp = 0;
       solved = 0;
       streak = 0;
-      lives = 3;
+      lives = 5;
       lastGain = 0;
+      saveState();
       modalOverlay.style.display = 'none';
     }
+
+    render();
+  }
+
+  function loadDaily() {
+    const today = new Date().toDateString();
+    if (localStorage.getItem('pw_daily_last') === today) {
+      showToast('info', 'Already Done', 'You have already completed today’s Daily Challenge!');
+      return;
+    }
+
+    isDailyMode = true;
+    // Generate a random Hard pattern for the daily challenge
+    pattern = newPatternFiltered('Hard');
+    currentOptions = generateOptions(pattern);
+    revealed = false;
+    hintUsed = false;
+    lastAnswerCorrect = false;
+    selectedOption = null;
+
+    // Visually activate daily button
+    filterBar.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('filter-chip--active'));
+    dailyBtn.classList.add('filter-chip--active');
 
     render();
   }
@@ -187,36 +247,50 @@
     if (checkAnswer(pattern, val)) {
       // Correct
       lastAnswerCorrect = true;
-      const newStreak = streak + 1;
-      const base = DIFF_XP[pattern.difficulty];
-      const bonus = Math.floor(newStreak / 3) * 5;
-      const gained = base + bonus;
-      exp += gained;
-      solved++;
-      lastGain = gained;
-      streak = newStreak;
-      best = Math.max(best, newStreak);
+      streak++;
+      best = Math.max(best, streak);
 
-      flashCard('good');
-      spinXpCoin(gained);
-      showToast('success', 'Correct!', `${pattern.difficulty} · ${pattern.name}`);
+      if (isDailyMode) {
+        localStorage.setItem('pw_daily_last', new Date().toDateString());
+        showToast('success', 'Daily Solved!', 'Streak increased! (+1)');
+        flashCard('good');
+      } else {
+        const base = DIFF_XP[pattern.difficulty];
+        const bonus = Math.floor(streak / 3) * 5;
+        const gained = base + bonus;
+        exp += gained;
+        solved++;
+        lastGain = gained;
+        spinXpCoin(gained);
+        showToast('success', 'Correct!', `${pattern.difficulty} · ${pattern.name}`);
+        flashCard('good');
+      }
+
+      saveState();
       revealed = true;
       render();
-      setTimeout(() => nextRound(), 1000);
+      setTimeout(() => nextRound(), 1200);
     } else {
       // Wrong
       lastAnswerCorrect = false;
       streak = 0;
-      const remaining = lives - 1;
-      lives = remaining;
+      saveState();
+
+      if (isDailyMode) {
+        // Failing daily challenge locks you out for the day
+        localStorage.setItem('pw_daily_last', new Date().toDateString());
+        showToast('error', 'Daily Failed', `Answer was ${pattern.answer} — Streak reset.`);
+      } else {
+        lives--;
+        showToast('error', 'Not quite', `Answer was ${pattern.answer} — ${pattern.name}`);
+      }
 
       flashCard('bad');
       shakeCard();
-      showToast('error', 'Not quite', `Answer was ${pattern.answer} — ${pattern.name}`);
       revealed = true;
       render();
 
-      if (remaining <= 0) {
+      if (lives <= 0) {
         setTimeout(() => showGameOver(), 800);
       } else {
         setTimeout(() => nextRound(), 1500);
@@ -228,6 +302,7 @@
     if (hintUsed || revealed) return;
     hintUsed = true;
     streak = 0;
+    saveState();
     showToast('info', '💡 Hint', pattern.hint);
     render();
   }
@@ -297,11 +372,17 @@
   // ---------- Filter ----------
 
   function setFilter(f) {
+    isDailyMode = false;
     filter = f;
+    saveState();
 
     // Update active chip
     filterBar.querySelectorAll('.filter-chip').forEach(chip => {
-      chip.classList.toggle('filter-chip--active', chip.getAttribute('data-filter') === f);
+      if(chip.id !== 'daily-btn') {
+        chip.classList.toggle('filter-chip--active', chip.getAttribute('data-filter') === f);
+      } else {
+        chip.classList.remove('filter-chip--active');
+      }
     });
 
     // Generate new pattern with filter
@@ -333,11 +414,16 @@
   });
 
   // Filter chips
-  filterBar.querySelectorAll('.filter-chip').forEach(chip => {
+  filterBar.querySelectorAll('.filter-chip[data-filter]').forEach(chip => {
     chip.addEventListener('click', () => {
       setFilter(chip.getAttribute('data-filter'));
     });
   });
+
+  // Daily Challenge
+  if (dailyBtn) {
+    dailyBtn.addEventListener('click', loadDaily);
+  }
 
   // ---------- Init ----------
   render();
