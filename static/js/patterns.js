@@ -1202,6 +1202,137 @@ function squareFreeNumbers() {
   return { series: ['1','2','3','5','6','7'], answer: '10', acceptable: ['10'], name: 'Square-free numbers', hint: 'Not divisible by any perfect square > 1.' };
 }
 
+// ---------- Batch 6: New Patterns ----------
+
+function interlacedArithGeo() {
+  const start = rand(2, 5), d = rand(2, 4), r = rand(2, 3);
+  const arr = [];
+  for (let i = 0; i < 3; i++) {
+    arr.push(start + i * d);
+    arr.push(start * (r ** i));
+  }
+  const ans = start + 3 * d;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Interlaced Arithmetic & Geometric', hint: 'Odd terms add, even terms multiply.' };
+}
+
+function wordLengths() {
+  return { series: ['3', '3', '5', '4', '4'], answer: '3', acceptable: ['3'], name: 'Word Lengths (Numbers)', hint: 'Length of ONE, TWO, THREE, FOUR, FIVE, SIX.' };
+}
+
+function primeDigitSum() {
+  const arr = [11, 13, 17, 19, 23];
+  const series = arr.map(p => {
+    return String(p).split('').reduce((a, b) => a + Number(b), 0);
+  });
+  return { series: series.map(String), answer: '11', acceptable: ['11'], name: 'Sum of Digits of Primes', hint: 'Sum the digits of consecutive prime numbers.' };
+}
+
+function dayOfWeekLength() {
+  return { series: ['6', '7', '9', '8', '6'], answer: '8', acceptable: ['8'], name: 'Days of the Week Lengths', hint: 'Length of MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY.' };
+}
+
+function alternateSquaresCubes() {
+  const arr = [];
+  for(let i=1; i<=3; i++) {
+    arr.push(i*i);
+    arr.push(i*i*i);
+  }
+  return { series: arr.map(String), answer: '16', acceptable: ['16'], name: 'Alternate Squares and Cubes', hint: 'n², n³, (n+1)², (n+1)³...' };
+}
+
+function reverseAlphabetStepTwo() {
+  const start = 25;
+  const arr = Array.from({ length: 5 }, (_, i) => String.fromCharCode(65 + start - i * 2));
+  const ans = String.fromCharCode(65 + start - 5 * 2);
+  return { series: arr, answer: ans, acceptable: [ans, ans.toLowerCase()], name: 'Reverse Alphabet Skip 2', hint: 'Letters go backward skipping one.' };
+}
+
+function fractionSeries() {
+  return { series: ['1/2', '2/3', '3/4', '4/5', '5/6'], answer: '6/7', acceptable: ['6/7'], name: 'Simple Fractions', hint: 'Numerator and denominator increase by 1.' };
+}
+
+function sumFirstNPrimes() {
+  const primes = [2, 3, 5, 7, 11, 13];
+  const arr = [];
+  let s = 0;
+  for(let i=0; i<5; i++) {
+    s += primes[i];
+    arr.push(s);
+  }
+  const ans = s + primes[5];
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Sum of First n Primes', hint: 'Running sum of prime numbers.' };
+}
+
+function alphabetPositionSum() {
+  const arr = Array.from({ length: 5 }, (_, i) => {
+    return String.fromCharCode(65 + i) + (i + 1 + i + 2);
+  });
+  return { series: arr, answer: 'F13', acceptable: ['F13', 'f13'], name: 'Alphabet + Position Sum', hint: 'Letter plus sum of next two positions.' };
+}
+
+function digitFactorials() {
+  const arr = [1, 2, 3, 4, 5];
+  const f = [1, 2, 6, 24, 120, 720];
+  return { series: arr.slice(0,5).map(n => String(f[n-1])), answer: '720', acceptable: ['720'], name: 'Factorials of 1 to 5', hint: 'n factorial.' };
+}
+
+function alternatingParity() {
+  const arr = [2, 3, 4, 5, 6, 7];
+  return { series: arr.map(String), answer: '8', acceptable: ['8'], name: 'Alternating Parity', hint: 'Even, Odd, Even, Odd...' };
+}
+
+function collatzLength() {
+  return { series: ['0', '1', '7', '2', '5', '8'], answer: '16', acceptable: ['16'], name: 'Collatz Sequence Lengths', hint: 'Number of steps to reach 1 for n=1,2,3,4,5,6,7.' };
+}
+
+function divisorCount() {
+  return { series: ['1', '2', '2', '3', '2', '4'], answer: '2', acceptable: ['2'], name: 'Number of Divisors', hint: 'Divisors of n: 1, 2, 3, 4, 5, 6, 7.' };
+}
+
+function palindromePrimes() {
+  return { series: ['2', '3', '5', '7', '11', '101'], answer: '131', acceptable: ['131'], name: 'Palindromic Primes', hint: 'Primes that read the same backwards.' };
+}
+
+function catalanConvolution() {
+  return { series: ['1', '1', '2', '5', '14', '42'], answer: '132', acceptable: ['132'], name: 'Catalan Numbers', hint: 'C(n) sequence.' };
+}
+
+function sumOfSquaresToN() {
+  const arr = [];
+  let s = 0;
+  for(let i=1; i<=5; i++) {
+    s += i*i;
+    arr.push(s);
+  }
+  const ans = s + 36;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Sum of Squares', hint: 'Sum of first n squares.' };
+}
+
+function base3Representation() {
+  return { series: ['1', '2', '10', '11', '12', '20'], answer: '21', acceptable: ['21'], name: 'Base 3 Counting', hint: 'Numbers 1 to 7 in base 3.' };
+}
+
+function monthLengths() {
+  return { series: ['31', '28', '31', '30', '31', '30'], answer: '31', acceptable: ['31'], name: 'Days in Months', hint: 'Days in Jan, Feb (non-leap), Mar, Apr, May, Jun, Jul.' };
+}
+
+function repeatedAdditionShift() {
+  let cur = 2;
+  const arr = [cur];
+  for(let i=1; i<=4; i++) {
+    cur = cur + 2*i;
+    arr.push(cur);
+  }
+  const ans = cur + 10;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Add Even Numbers', hint: 'Add 2, then 4, then 6...' };
+}
+
+function cubeRootPattern() {
+  const arr = Array.from({length: 5}, (_, i) => (i+1)*(i+1)*(i+1));
+  const ans = 216;
+  return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Perfect Cubes', hint: 'Cubes of 1, 2, 3...' };
+}
+
 // ---------- Registry ----------
 
 const registry = [
@@ -1384,6 +1515,26 @@ const registry = [
   { fn: kaprekarRoutine, difficulty: 'GATE' },
   { fn: smoothNumbers, difficulty: 'GATE' },
   { fn: squareFreeNumbers, difficulty: 'GATE' },
+  { fn: interlacedArithGeo, difficulty: 'Medium' },
+  { fn: wordLengths, difficulty: 'Medium' },
+  { fn: primeDigitSum, difficulty: 'Hard' },
+  { fn: dayOfWeekLength, difficulty: 'Medium' },
+  { fn: alternateSquaresCubes, difficulty: 'Medium' },
+  { fn: reverseAlphabetStepTwo, difficulty: 'Easy' },
+  { fn: fractionSeries, difficulty: 'Medium' },
+  { fn: sumFirstNPrimes, difficulty: 'Hard' },
+  { fn: alphabetPositionSum, difficulty: 'Hard' },
+  { fn: digitFactorials, difficulty: 'Hard' },
+  { fn: alternatingParity, difficulty: 'Easy' },
+  { fn: collatzLength, difficulty: 'GATE' },
+  { fn: divisorCount, difficulty: 'GATE' },
+  { fn: palindromePrimes, difficulty: 'GATE' },
+  { fn: catalanConvolution, difficulty: 'GATE' },
+  { fn: sumOfSquaresToN, difficulty: 'Medium' },
+  { fn: base3Representation, difficulty: 'GATE' },
+  { fn: monthLengths, difficulty: 'Easy' },
+  { fn: repeatedAdditionShift, difficulty: 'Easy' },
+  { fn: cubeRootPattern, difficulty: 'Easy' },
 ];
 
 // ---------- Public API ----------

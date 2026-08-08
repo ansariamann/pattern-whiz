@@ -94,7 +94,7 @@
 
     // Card header
     if (isDailyMode) {
-      accentBar.style.background = 'linear-gradient(to right, #fbbf24, #f59e0b)';
+      accentBar.style.background = '#f59e0b';
       diffChip.innerHTML = '📅 Daily Challenge';
       diffChip.style.background = 'rgba(245, 158, 11, 0.15)';
       diffChip.style.color = '#b45309';
@@ -148,7 +148,7 @@
         } else {
           el.classList.add('series-item--question');
           if (!isDailyMode) el.setAttribute('data-diff', pattern.difficulty);
-          else el.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+          else el.style.background = '#f59e0b';
         }
       }
 
