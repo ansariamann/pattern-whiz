@@ -952,9 +952,10 @@ body {
 /* ---------- Footer ---------- */
 .puzzle-nav {
   display: flex;
+  width: 100%;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: calc(1rem - 5px);
 }
 
 .puzzle-nav .puzzle-nav__button {
@@ -1180,4 +1181,33 @@ body {
 @keyframes toastOut {
   from { opacity: 1; transform: translateY(0) scale(1); }
   to { opacity: 0; transform: translateY(-1rem) scale(0.95); }
+}
+
+/* Keep the game still and make the selected answer the only feedback border. */
+*, *::before, *::after {
+  animation: none !important;
+  transition: none !important;
+}
+.series-item { opacity: 1; transform: none; }
+.series-item--correct, .series-item--wrong {
+  background: var(--card-solid);
+  border-color: var(--border);
+  color: var(--fg);
+  box-shadow: none;
+}
+.option-btn.btn, .option-btn.btn:disabled {
+  opacity: 1;
+  border: 2px solid #a99e91;
+  background: #fffdf8 !important;
+  color: var(--fg) !important;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.option-btn.btn:hover:not(:disabled) { border-color: #756657; background: #f6f0e8; }
+.option-btn.btn.option-btn--correct { border-color: #16854c !important; }
+.option-btn.btn.option-btn--wrong { border-color: #c83a3a !important; }
+.puzzle-nav { display: flex; width: 100%; justify-content: space-between; }
+.puzzle-nav #skip-btn { margin-left: auto; }
+@media (max-width: 479px) {
+  .puzzle-nav .puzzle-nav__button { flex: 0 1 auto; min-width: 0; }
 }

@@ -177,14 +177,8 @@
       btn.textContent = opt;
       btn.disabled = revealed;
       
-      if (revealed) {
-        if (checkAnswer(pattern, opt)) {
-          // This is the correct answer
-          btn.classList.add(lastAnswerCorrect && selectedOption === opt ? 'option-btn--correct' : 'option-btn--reveal');
-        } else if (selectedOption === opt) {
-          // This is the wrong answer the user picked
-          btn.classList.add('option-btn--wrong');
-        }
+      if (revealed && selectedOption === opt) {
+        btn.classList.add(lastAnswerCorrect ? 'option-btn--correct' : 'option-btn--wrong');
       }
 
       btn.addEventListener('click', () => {
@@ -300,7 +294,6 @@
         exp += gained;
         solved++;
         lastGain = gained;
-        spinXpCoin(gained);
       }
 
       saveState();
