@@ -37,6 +37,9 @@
   let hintUsed = false;
   let flashTimeout = null;
   let isDailyMode = false;
+  let history = [];
+  let historyIndex = 0;
+  let advanceTimer = null;
 
   function saveState() {
     localStorage.setItem('pw_filter', filter);
@@ -65,6 +68,7 @@
   const optionsGrid = $('options-grid');
   const hintBtn = $('hint-btn');
   const skipBtn = $('skip-btn');
+  const prevBtn = $('prev-btn');
   const gameCard = $('game-card');
   const footerText = $('footer-text');
   const modalOverlay = $('modal-overlay');
@@ -126,7 +130,9 @@
     // Input state
     hintBtn.disabled = hintUsed || revealed;
     hintBtn.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 4 12.9V17H8v-2.1A7 7 0 0 1 12 2z"/></svg> ${hintUsed ? 'Hint shown' : 'Hint (resets streak)'}`;
-    skipBtn.disabled = revealed;
+    prevBtn.disabled = isDailyMode || historyIndex === 0;
+    skipBtn.disabled = isDailyMode && revealed;
+    skipBtn.textContent = 'Next →';
 
     // Footer
     footerText.textContent = `Best streak: ${best} · Mix of arithmetic, algebraic, recurrence, prime & alphanumeric series.`;
@@ -190,9 +196,31 @@
   let lastAnswerCorrect = false;
   let selectedOption = null;
 
+  function snapshot() {
+    return { pattern, currentOptions, revealed, hintUsed, lastAnswerCorrect, selectedOption };
+  }
+
+  function remember() { history[historyIndex] = snapshot(); }
+
+  function restore(index) {
+    clearTimeout(advanceTimer);
+    remember();
+    historyIndex = index;
+    ({ pattern, currentOptions, revealed, hintUsed, lastAnswerCorrect, selectedOption } = history[index]);
+    render();
+  }
+
   // ---------- Actions ----------
 
   function nextRound(resetAll = false) {
+    clearTimeout(advanceTimer);
+    if (!isDailyMode && !resetAll) {
+      remember();
+      if (historyIndex < history.length - 1) {
+        restore(historyIndex + 1);
+        return;
+      }
+    }
     if (isDailyMode) {
       // If we just finished daily mode, revert to normal
       isDailyMode = false;
@@ -208,6 +236,10 @@
     hintUsed = false;
     lastAnswerCorrect = false;
     selectedOption = null;
+
+    if (resetAll || isDailyMode) { history = []; historyIndex = 0; }
+    else if (history.length) { historyIndex++; }
+    history[historyIndex] = snapshot();
 
     if (resetAll) {
       exp = 0;
@@ -230,6 +262,9 @@
     }
 
     isDailyMode = true;
+    clearTimeout(advanceTimer);
+    history = [];
+    historyIndex = 0;
     // Generate a random Hard pattern for the daily challenge
     pattern = newPatternFiltered('Hard');
     currentOptions = generateOptions(pattern);
@@ -272,7 +307,7 @@
       saveState();
       revealed = true;
       render();
-      setTimeout(() => nextRound(), 1200);
+      advanceTimer = setTimeout(() => nextRound(), 1200);
     } else {
       // Wrong
       lastAnswerCorrect = false;
@@ -294,7 +329,7 @@
       if (lives <= 0) {
         setTimeout(() => showGameOver(), 800);
       } else {
-        setTimeout(() => nextRound(), 1500);
+        advanceTimer = setTimeout(() => nextRound(), 1500);
       }
     }
   }
@@ -373,6 +408,9 @@
   // ---------- Filter ----------
 
   function setFilter(f) {
+    clearTimeout(advanceTimer);
+    history = [];
+    historyIndex = 0;
     isDailyMode = false;
     filter = f;
     saveState();
@@ -401,9 +439,13 @@
   // Hint
   hintBtn.addEventListener('click', useHint);
 
+  prevBtn.addEventListener('click', () => {
+    if (!isDailyMode && historyIndex > 0) restore(historyIndex - 1);
+  });
+
   // Skip
   skipBtn.addEventListener('click', () => {
-    if (!revealed) nextRound();
+    if (!isDailyMode || !revealed) nextRound();
   });
 
   // Play again

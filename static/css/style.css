@@ -964,6 +964,37 @@ body {
 }
 
 /* ---------- Footer ---------- */
+.puzzle-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.puzzle-nav .puzzle-nav__button {
+  min-height: 3.5rem;
+  min-width: 9rem;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid #bdb3a7;
+  background: var(--card-solid);
+  color: var(--fg);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.puzzle-nav .puzzle-nav__button:hover:not(:disabled) {
+  background: #eee8df;
+  border-color: var(--primary);
+}
+
+.puzzle-nav .puzzle-nav__button:disabled {
+  opacity: 0.55;
+}
+
+@media (max-width: 479px) {
+  .puzzle-nav .puzzle-nav__button { flex: 1; min-width: 0; }
+}
+
 .footer-text {
   text-align: center;
   font-size: 0.8125rem;
