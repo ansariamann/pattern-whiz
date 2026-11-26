@@ -145,7 +145,8 @@
     displaySeries.forEach((item, i) => {
       const el = document.createElement('div');
       el.className = 'series-item';
-      el.style.animationDelay = `${i * 0.06}s`;
+      if (revealed) el.classList.add('series-item--static');
+      else el.style.animationDelay = `${i * 0.06}s`;
 
       const isLast = i === displaySeries.length - 1;
 
@@ -292,7 +293,6 @@
 
       if (isDailyMode) {
         localStorage.setItem('pw_daily_last', new Date().toDateString());
-        flashCard('good');
       } else {
         const base = DIFF_XP[pattern.difficulty];
         const bonus = Math.floor(streak / 3) * 5;
@@ -301,7 +301,6 @@
         solved++;
         lastGain = gained;
         spinXpCoin(gained);
-        flashCard('good');
       }
 
       saveState();
@@ -321,8 +320,6 @@
         lives--;
       }
 
-      flashCard('bad');
-      shakeCard();
       revealed = true;
       render();
 
@@ -363,11 +360,6 @@
   }
 
   function spinXpCoin(gained) {
-    xpDisc.classList.remove('spin');
-    void xpDisc.offsetWidth;
-    xpDisc.classList.add('spin');
-    setTimeout(() => xpDisc.classList.remove('spin'), 600);
-
     // Show popup
     xpPopup.textContent = `+${gained}`;
     xpPopup.classList.remove('show');
