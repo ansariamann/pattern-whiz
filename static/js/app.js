@@ -61,6 +61,7 @@
   const solvedLabel = $('solved-label');
   const streakInlineVal = $('streak-inline-val');
   const seriesDisplay = $('series-display');
+  const ruleDisplay = $('rule-display');
   const optionsGrid = $('options-grid');
   const hintBtn = $('hint-btn');
   const skipBtn = $('skip-btn');
@@ -114,6 +115,10 @@
 
     // Series items
     renderSeries();
+
+    // Keep post-answer feedback in context, rather than interrupting play with a toast.
+    ruleDisplay.hidden = !revealed;
+    ruleDisplay.textContent = revealed ? (pattern.formula || pattern.hint) : '';
     
     // MCQ Options
     renderOptions();
@@ -161,7 +166,7 @@
     optionsGrid.innerHTML = '';
     currentOptions.forEach((opt, i) => {
       const btn = document.createElement('button');
-      btn.className = 'option-btn';
+      btn.className = 'btn option-btn';
       btn.textContent = opt;
       btn.disabled = revealed;
       
@@ -252,7 +257,6 @@
 
       if (isDailyMode) {
         localStorage.setItem('pw_daily_last', new Date().toDateString());
-        showToast('success', 'Daily Solved!', 'Streak increased! (+1)');
         flashCard('good');
       } else {
         const base = DIFF_XP[pattern.difficulty];
@@ -262,7 +266,6 @@
         solved++;
         lastGain = gained;
         spinXpCoin(gained);
-        showToast('success', 'Correct!', `${pattern.difficulty} · ${pattern.name}`);
         flashCard('good');
       }
 
@@ -279,10 +282,8 @@
       if (isDailyMode) {
         // Failing daily challenge locks you out for the day
         localStorage.setItem('pw_daily_last', new Date().toDateString());
-        showToast('error', 'Daily Failed', `Answer was ${pattern.answer} — Streak reset.`);
       } else {
         lives--;
-        showToast('error', 'Not quite', `Answer was ${pattern.answer} — ${pattern.name}`);
       }
 
       flashCard('bad');

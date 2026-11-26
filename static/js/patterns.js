@@ -1333,6 +1333,57 @@ function cubeRootPattern() {
   return { series: arr.map(String), answer: String(ans), acceptable: [String(ans)], name: 'Perfect Cubes', hint: 'Cubes of 1, 2, 3...' };
 }
 
+// ---------- Batch 7: Formula-led patterns ----------
+
+function powersOfSeven() {
+  const arr = Array.from({ length: 5 }, (_, i) => 7 ** i);
+  return { series: arr.map(String), answer: '16807', acceptable: ['16807'], name: 'Powers of seven', formula: 'Rule: aₙ = 7ⁿ, starting at n = 0.' };
+}
+
+function alternatingSquares() {
+  return { series: ['1', '-4', '9', '-16', '25'], answer: '-36', acceptable: ['-36'], name: 'Alternating squares', formula: 'Rule: aₙ = (−1)ⁿ⁺¹n².' };
+}
+
+function fourthPowerOffsets() {
+  return { series: ['2', '17', '82', '257', '626'], answer: '1297', acceptable: ['1297'], name: 'Fourth powers plus one', formula: 'Rule: aₙ = n⁴ + 1.' };
+}
+
+function fibonacciOddPositions() {
+  return { series: ['1', '2', '5', '13', '34'], answer: '89', acceptable: ['89'], name: 'Every other Fibonacci number', formula: 'Rule: take F₁, F₃, F₅, F₇ … from the Fibonacci sequence.' };
+}
+
+function sumOfCubes() {
+  return { series: ['1', '9', '36', '100', '225'], answer: '441', acceptable: ['441'], name: 'Sum of cubes', formula: 'Rule: aₙ = (1 + 2 + … + n)².' };
+}
+
+function reciprocalDenominators() {
+  return { series: ['1/1', '1/3', '1/5', '1/7', '1/9'], answer: '1/11', acceptable: ['1/11'], name: 'Odd reciprocals', formula: 'Rule: aₙ = 1/(2n − 1).' };
+}
+
+function primeSquares() {
+  return { series: ['4', '9', '25', '49', '121'], answer: '169', acceptable: ['169'], name: 'Squares of primes', formula: 'Rule: square consecutive primes: 2², 3², 5² …' };
+}
+
+function octalCounting() {
+  return { series: ['5', '6', '7', '10', '11', '12'], answer: '13', acceptable: ['13'], name: 'Base-eight counting', formula: 'Rule: count upward in base 8.' };
+}
+
+function centeredTriangular() {
+  return { series: ['1', '4', '10', '19', '31'], answer: '46', acceptable: ['46'], name: 'Centered triangular numbers', formula: 'Rule: add successive multiples of 3: +3, +6, +9 …' };
+}
+
+function digitProductPlusOne() {
+  return { series: ['2', '3', '7', '43', '1807'], answer: '3263443', acceptable: ['3263443'], name: 'Euclid product sequence', formula: 'Rule: multiply all earlier terms, then add 1.' };
+}
+
+function alphabetPrimeSteps() {
+  return { series: ['A', 'C', 'F', 'K', 'R'], answer: 'C', acceptable: ['C', 'c'], name: 'Alphabet prime steps', formula: 'Rule: advance by prime offsets +2, +3, +5, +7, +11 (wrapping after Z).' };
+}
+
+function factorialDifferences() {
+  return { series: ['1', '1', '4', '18', '96'], answer: '600', acceptable: ['600'], name: 'Factorial differences', formula: 'Rule: aₙ = (n + 1)! − n!.' };
+}
+
 // ---------- Registry ----------
 
 const registry = [
@@ -1535,6 +1586,18 @@ const registry = [
   { fn: monthLengths, difficulty: 'Easy' },
   { fn: repeatedAdditionShift, difficulty: 'Easy' },
   { fn: cubeRootPattern, difficulty: 'Easy' },
+  { fn: powersOfSeven, difficulty: 'Medium' },
+  { fn: alternatingSquares, difficulty: 'Hard' },
+  { fn: fourthPowerOffsets, difficulty: 'Hard' },
+  { fn: fibonacciOddPositions, difficulty: 'Hard' },
+  { fn: sumOfCubes, difficulty: 'Hard' },
+  { fn: reciprocalDenominators, difficulty: 'Medium' },
+  { fn: primeSquares, difficulty: 'Medium' },
+  { fn: octalCounting, difficulty: 'GATE' },
+  { fn: centeredTriangular, difficulty: 'GATE' },
+  { fn: digitProductPlusOne, difficulty: 'GATE' },
+  { fn: alphabetPrimeSteps, difficulty: 'Medium' },
+  { fn: factorialDifferences, difficulty: 'GATE' },
 ];
 
 // ---------- Public API ----------
